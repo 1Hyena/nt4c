@@ -90,7 +90,7 @@ typedef struct NT_PARSER {
     } bitset;
 } NT_PARSER;
 
-static void nt_parser_set_memory(
+static inline void nt_parser_set_memory(
     NT_PARSER *parser, NT_NODE *nodes, size_t count
 ) {
     parser->memory.nodes = nodes;
@@ -109,7 +109,7 @@ static int nt_size_to_int(size_t a) {
     return a > INT_MAX ? INT_MAX : (int) a;
 }
 
-static int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
+static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
     parser->node.count = 0;
     parser->node.root = nt_parser_create_node(parser);
 
@@ -208,9 +208,11 @@ static const char *nt_parser_deserialize(
 
         node = nt_parser_create_node(parser);
 
-        nt_node_set_data(
-            node, after_spaces, nt_long_to_size(key_op - after_spaces)
-        );
+        if (node) {
+            nt_node_set_data(
+                node, after_spaces, nt_long_to_size(key_op - after_spaces)
+            );
+        }
 
         if (key_op[1] == ' ') {
             const char *after_key_op = nt_str_seg_skip_key_op(
@@ -224,12 +226,14 @@ static const char *nt_parser_deserialize(
 
             NT_NODE *val = nt_parser_create_node(parser);
 
-            nt_node_set_data(
-                val, after_key_op,
-                line_size - nt_long_to_size(after_key_op - str)
-            );
+            if (val != nullptr) {
+                nt_node_set_data(
+                    val, after_key_op,
+                    line_size - nt_long_to_size(after_key_op - str)
+                );
 
-            nt_node_to_node(val, node);
+                nt_node_to_node(val, node);
+            }
         }
     }
 
