@@ -2,7 +2,7 @@
 #include "../../nt4c.h"
 #include <stdlib.h>
 
-static void serialize(NT_NODE *node, size_t depth) {
+static void dump_node(NT_NODE *node, size_t depth) {
     if (node->data) {
         for (size_t i=0; i<depth; ++i) {
             printf("%s", "    ");
@@ -13,7 +13,7 @@ static void serialize(NT_NODE *node, size_t depth) {
     }
 
     for (NT_NODE *child = node->children; child; child = child->next) {
-        serialize(child, depth);
+        dump_node(child, depth);
     }
 }
 
@@ -23,7 +23,7 @@ int main(int, char **) {
 
     nt_parser_set_memory(&parser, nodes, (sizeof(nodes) / sizeof((nodes)[0])));
     nt_parse("hello: world", 0, &parser);
-    serialize(parser.node.root, 0);
+    dump_node(parser.node.root, 0);
 
     return EXIT_SUCCESS;
 }
