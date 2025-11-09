@@ -25,5 +25,55 @@
 #ifndef NT4C_H_09_11_2025
 #define NT4C_H_09_11_2025
 
+#include <string.h>
+
+typedef struct NT_NODE      NT_NODE;
+typedef struct NT_PARSER    NT_PARSER;
+
+typedef enum : unsigned char {
+    NT_NONE = 0,
+    ////////////////////////////////////////////////////////////////////////////
+    NT_COMMENT,
+    ////////////////////////////////////////////////////////////////////////////
+    MAX_NT_TYPE
+} NT_TYPE;
+
+typedef struct NT_NODE {
+    NT_NODE *       next;
+    NT_NODE *       children;
+    const char *    data;
+    size_t          size;
+    NT_TYPE         type;
+} NT_NODE;
+
+typedef struct NT_PARSER {
+    struct {
+        NT_NODE *   root;
+        size_t      count;
+    } node;
+
+    struct {
+        NT_NODE *   nodes;
+        size_t      count;
+    } memory;
+} NT_PARSER;
+
+static void nt_parser_set_memory(
+    NT_PARSER *parser, NT_NODE *nodes, size_t count
+) {
+    parser->memory.nodes = nodes;
+    parser->memory.count = count;
+}
+
+static int nt_parse(const char *text, size_t size, NT_PARSER *parser) {
+    if (!size) {
+        size = strlen(text);
+    }
+
+    parser->node.root = nullptr;
+    parser->node.count = 0;
+
+    return 0;
+}
 
 #endif
