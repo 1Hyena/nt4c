@@ -13,7 +13,7 @@ In short, NestedText is a file format for holding structured data.
 
 The following resources can explain more if you are unfamiliar with it:
 * [Documentation](https://nestedtext.org/)
-* [Development](https://github.com/KenKundert/nestedtext)
+* [Questions, suggestions and issues](https://github.com/KenKundert/nestedtext)
 
 
 # License ######################################################################
