@@ -18,7 +18,8 @@ The following resources can explain more if you are unfamiliar with it:
 
 ## What is NT4C
 
-NT4C is NestedText parser implementation in C, with the following features:
+NT4C is a NestedText parser implementation written following the C23 standard of
+the C programming language and it comes with the following features:
 
 * **Compliance:** Generally, NT4C aims to be compliant to the latest version of
   [NestedText specification](https://nestedtext.org/). However, currently we are
@@ -41,7 +42,7 @@ NT4C is NestedText parser implementation in C, with the following features:
 
 * **Portability:** NT4C builds and works on Linux. It should be simple to make
   it run also on most other platforms, at least as long as the platform provides
-  C standard library.
+  the C standard library.
 
 * **Encoding:** NT4C by default expects UTF-8 encoding of the input text. It
   does not attempt to detect Unicode encoding errors.
