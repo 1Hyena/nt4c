@@ -44,8 +44,8 @@ standard of the C programming language. It includes the following features:
   it run also on most other platforms, at least as long as the platform provides
   the C standard library.
 
-* **Encoding:** NT4C by default expects UTF-8 encoding of the input text. It
-  does not attempt to detect Unicode encoding errors.
+* **Encoding:** NT4C expects UTF-8 encoding of the input text. It does not
+  attempt to detect Unicode encoding errors.
 
 * **Permissive license:** NT4C is available under the [MIT license](LICENSE).
 
