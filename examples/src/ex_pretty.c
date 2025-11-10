@@ -9,11 +9,35 @@ const char input_data[] = {
 
 static void pretty_print(NT_NODE *node, size_t depth) {
     if (node->data) {
-        for (size_t i=0; i<depth; ++i) {
-            printf("%s", "    ");
+        if (node->type != NT_REST_OF_LINE) {
+            for (size_t i=0; i<depth; ++i) {
+                printf("%s", "    ");
+            }
         }
 
-        printf("%.*s\n", (int) node->size, node->data);
+        const char *prefix = "";
+        const char *suffix = "\n";
+
+        switch (node->type) {
+            case NT_COMMENT: {
+                prefix = "\x1b[33m#";
+                suffix = "\x1b[0m\n";
+                break;
+            }
+            case NT_KEY: {
+                prefix = "\x1b[1;34m";
+                suffix = "\x1b[0m:\n";
+
+                if (node->children && node->children->type == NT_REST_OF_LINE) {
+                    suffix = "\x1b[0m: ";
+                }
+
+                break;
+            }
+            default: break;
+        }
+
+        printf("%s%.*s%s", prefix, (int) node->size, node->data, suffix);
         ++depth;
     }
 

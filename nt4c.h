@@ -37,7 +37,7 @@ typedef struct NT_PARSER    NT_PARSER;
 typedef enum : unsigned char {
     NT_NONE = 0,
     ////////////////////////////////////////////////////////////////////////////
-    NT_COMMENT,
+    NT_COMMENT, NT_KEY, NT_REST_OF_LINE,
     ////////////////////////////////////////////////////////////////////////////
     MAX_NT_TYPE
 } NT_TYPE;
@@ -123,7 +123,9 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
         s = next;
     }
 
-    nt_node_reverse(parser->node.root);
+    if (parser->node.root) {
+        nt_node_reverse(parser->node.root);
+    }
 
     return nt_size_to_int(parser->node.count);
 }
@@ -161,8 +163,15 @@ static const char *nt_parser_deserialize(
         if (parent) {
             node = nt_parser_create_node(parser);
 
-            nt_node_set_data(node, after_spaces, line_size - spaces);
-            nt_node_to_node(node, parent);
+            if (node != nullptr) {
+                node->type = NT_COMMENT;
+
+                nt_node_set_data(
+                    node, after_spaces + 1, line_size - (spaces + 1)
+                );
+
+                nt_node_to_node(node, parent);
+            }
         }
 
         return next_line;
@@ -171,13 +180,16 @@ static const char *nt_parser_deserialize(
         if (parent) {
             node = nt_parser_create_node(parser);
 
-            if (after_spaces + 1 < str + line_size && after_spaces[1] == ' ') {
+            if (node != nullptr
+            && after_spaces + 1 < str + line_size && after_spaces[1] == ' ') {
                 nt_node_set_data(
                     node, after_spaces + 2, line_size - (spaces + 2)
                 );
             }
 
-            nt_node_to_node(node, parent);
+            if (node != nullptr) {
+                nt_node_to_node(node, parent);
+            }
         }
     }
     else if (parent) {
@@ -200,6 +212,8 @@ static const char *nt_parser_deserialize(
         node = nt_parser_create_node(parser);
 
         if (node) {
+            node->type = NT_KEY;
+
             nt_node_set_data(
                 node, after_spaces, nt_long_to_size(key_op - after_spaces)
             );
@@ -218,6 +232,8 @@ static const char *nt_parser_deserialize(
             NT_NODE *val = nt_parser_create_node(parser);
 
             if (val != nullptr) {
+                val->type = NT_REST_OF_LINE;
+
                 nt_node_set_data(
                     val, after_key_op,
                     line_size - nt_long_to_size(after_key_op - str)
