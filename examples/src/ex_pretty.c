@@ -10,8 +10,10 @@ const char input_data[] = {
 static void pretty_print(NT_NODE *node, size_t depth) {
     if (node->data) {
         switch (node->type) {
+            case NT_OP_SET:
+            case NT_OP_SET_ROL:
             case NT_STRING:
-            case NT_EMPTY_LINE: {
+            case NT_COMMENT: {
                 break;
             }
             default: {
@@ -35,25 +37,30 @@ static void pretty_print(NT_NODE *node, size_t depth) {
                 prefix = "\x1b[7;31m";
                 break;
             }
-            case NT_COMMENT: {
+            case NT_COMMENT_TAG: {
                 prefix = "\x1b[33m";
                 suffix = "";
                 break;
             }
-            case NT_LIST_ITEM: {
+            case NT_LIST_TAG: {
                 prefix = "\x1b[0;34m";
                 suffix = "\x1b[0m";
                 break;
             }
+            case NT_LIST_KEY:
+            case NT_DICT_KEY:
             case NT_KEY: {
                 prefix = "\x1b[1;34m";
-                suffix = "\x1b[0;34m:\x1b[0m ";
+                suffix = "\x1b[0m";
                 break;
             }
-            case NT_LIST_KEY:
-            case NT_DICT_KEY: {
-                prefix = "\x1b[1;34m";
-                suffix = "\x1b[0;34m:\x1b[0m\n";
+            case NT_OP_SET: {
+                prefix = "\x1b[0;34m";
+                break;
+            }
+            case NT_OP_SET_ROL: {
+                prefix = "\x1b[0;34m";
+                suffix = "\x1b[0m";
                 break;
             }
             default: break;
@@ -69,14 +76,17 @@ static void pretty_print(NT_NODE *node, size_t depth) {
 }
 
 int main(int, char **) {
-    constexpr size_t node_count = 64;
+    constexpr size_t node_count = 128;
     NT_NODE nodes[node_count];
     NT_PARSER parser = {};
 
     nt_parser_set_memory(&parser, nodes, node_count);
+    nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE);
 
     if (nt_parse(input_data, 0, &parser) > (int) node_count) {
-        fprintf(stderr, "%s\n", "insufficient memory");
+        fprintf(
+            stderr, "insufficient memory for %lu nodes\n", parser.node.count
+        );
     }
     else pretty_print(parser.node.root, 0);
 
