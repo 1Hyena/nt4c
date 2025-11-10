@@ -9,7 +9,7 @@ const char input_data[] = {
 
 static void pretty_print(NT_NODE *node, size_t depth) {
     if (node->data) {
-        if (node->type != NT_REST_OF_LINE) {
+        if (node->type != NT_STRING) {
             for (size_t i=0; i<depth; ++i) {
                 printf("%s", "    ");
             }
@@ -19,6 +19,11 @@ static void pretty_print(NT_NODE *node, size_t depth) {
         const char *suffix = "\n";
 
         switch (node->type) {
+            case NT_INVALID: {
+                prefix = "\x1b[7;31m";
+                suffix = "\x1b[0m\n";
+                break;
+            }
             case NT_COMMENT: {
                 prefix = "\x1b[33m#";
                 suffix = "\x1b[0m\n";
@@ -28,7 +33,7 @@ static void pretty_print(NT_NODE *node, size_t depth) {
                 prefix = "\x1b[1;34m";
                 suffix = "\x1b[0m:\n";
 
-                if (node->children && node->children->type == NT_REST_OF_LINE) {
+                if (node->children && node->children->type == NT_STRING) {
                     suffix = "\x1b[0m: ";
                 }
 

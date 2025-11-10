@@ -37,7 +37,7 @@ typedef struct NT_PARSER    NT_PARSER;
 typedef enum : unsigned char {
     NT_NONE = 0,
     ////////////////////////////////////////////////////////////////////////////
-    NT_COMMENT, NT_KEY, NT_REST_OF_LINE,
+    NT_COMMENT, NT_KEY, NT_STRING, NT_DICTIONARY, NT_LIST, NT_INVALID,
     ////////////////////////////////////////////////////////////////////////////
     MAX_NT_TYPE
 } NT_TYPE;
@@ -160,56 +160,70 @@ static const char *nt_parser_deserialize(
     NT_NODE *node = nullptr;
 
     if (*after_spaces == '#') {
-        if (parent) {
-            node = nt_parser_create_node(parser);
+        node = nt_parser_create_node(parser);
 
-            if (node != nullptr) {
-                node->type = NT_COMMENT;
+        if (node != nullptr) {
+            node->type = NT_COMMENT;
 
-                nt_node_set_data(
-                    node, after_spaces + 1, line_size - (spaces + 1)
-                );
+            nt_node_set_data(
+                node, after_spaces + 1, line_size - (spaces + 1)
+            );
 
+            if (parent) {
                 nt_node_to_node(node, parent);
             }
+            else abort();
         }
 
         return next_line;
     }
     else if (*after_spaces == '-') {
-        if (parent) {
-            node = nt_parser_create_node(parser);
+        node = nt_parser_create_node(parser);
 
-            if (node != nullptr
-            && after_spaces + 1 < str + line_size && after_spaces[1] == ' ') {
+        if (node) {
+            if (after_spaces + 1 < str + line_size && after_spaces[1] == ' ') {
                 nt_node_set_data(
                     node, after_spaces + 2, line_size - (spaces + 2)
                 );
             }
 
-            if (node != nullptr) {
+            if (parent) {
                 nt_node_to_node(node, parent);
             }
+            else abort();
         }
     }
-    else if (parent) {
+    else {
         const char *key_op = nt_str_seg_skip_key(
             after_spaces, line_size - spaces
         );
 
-        if (key_op == after_spaces) {
-            // Could not determine a valid key.
-            if (parser->bitset.debug) {
-                nt_print_log(
-                    "%lu, %lu, [%.*s]", line_size, spaces,
-                    nt_size_to_int(line_size - spaces), after_spaces
-                );
-            }
+        const char *after_key_op = nullptr;
 
-            return nullptr;
+        if (key_op != after_spaces && key_op[1] == ' ') {
+            after_key_op = nt_str_seg_skip_key_op(
+                key_op, line_size - nt_long_to_size(key_op - str)
+            );
         }
 
         node = nt_parser_create_node(parser);
+
+        if (key_op == after_spaces || after_key_op == key_op) {
+            // Could not determine a valid key.
+
+            if (node) {
+                node->type = NT_INVALID;
+
+                nt_node_set_data(node, after_spaces, line_size - spaces);
+
+                if (parent) {
+                    nt_node_to_node(node, parent);
+                }
+                else abort();
+            }
+
+            return next_line;
+        }
 
         if (node) {
             node->type = NT_KEY;
@@ -219,27 +233,21 @@ static const char *nt_parser_deserialize(
             );
         }
 
-        if (key_op[1] == ' ') {
-            const char *after_key_op = nt_str_seg_skip_key_op(
-                key_op, line_size - nt_long_to_size(key_op - str)
-            );
-
-            if (after_key_op == key_op) {
-                // Could not determine a valid value.
-                return nullptr;
-            }
-
+        if (after_key_op) {
             NT_NODE *val = nt_parser_create_node(parser);
 
-            if (val != nullptr) {
-                val->type = NT_REST_OF_LINE;
+            if (val) {
+                val->type = NT_STRING;
 
                 nt_node_set_data(
                     val, after_key_op,
                     line_size - nt_long_to_size(after_key_op - str)
                 );
 
-                nt_node_to_node(val, node);
+                if (node) {
+                    nt_node_to_node(val, node);
+                }
+                else abort();
             }
         }
     }
@@ -267,7 +275,11 @@ static const char *nt_parser_deserialize(
 
     if (node) {
         nt_node_reverse(node);
-        nt_node_to_node(node, parent);
+
+        if (parent) {
+            nt_node_to_node(node, parent);
+        }
+        else abort();
     }
 
     return s;
