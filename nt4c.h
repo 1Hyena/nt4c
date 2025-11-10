@@ -62,7 +62,10 @@ static const char *nt_str_seg_skip_key(const char *str, size_t str_sz);
 static const char *nt_str_seg_skip_key_op(const char *str, size_t str_sz);
 static const char *nt_str_seg_skip_byte(const char *str, size_t str_sz);
 
-static void nt_print_log(char *fmt, ...);
+static void     nt_print_log(char *fmt, ...);
+static size_t   nt_long_to_size(long);
+static long     nt_size_to_long(size_t);
+static int      nt_size_to_int(size_t);
 
 typedef struct NT_NODE {
     NT_NODE *       next;
@@ -97,18 +100,6 @@ static inline void nt_parser_set_memory(
     parser->memory.count = count;
 }
 
-static size_t nt_long_to_size(long a) {
-    return a < 0 ? 0 : (size_t) a;
-}
-
-static long nt_size_to_long(size_t a) {
-    return a > LONG_MAX ? LONG_MAX : (long) a;
-}
-
-static int nt_size_to_int(size_t a) {
-    return a > INT_MAX ? INT_MAX : (int) a;
-}
-
 static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
     parser->node.count = 0;
     parser->node.root = nt_parser_create_node(parser);
@@ -134,7 +125,7 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
 
     nt_node_reverse(parser->node.root);
 
-    return 0;
+    return nt_size_to_int(parser->node.count);
 }
 
 static const char *nt_parser_deserialize(
@@ -271,9 +262,11 @@ static NT_NODE *nt_parser_create_node(NT_PARSER *parser) {
     NT_NODE *node = nullptr;
 
     if (parser->node.count < parser->memory.count) {
-        node = &parser->memory.nodes[parser->node.count++];
+        node = &parser->memory.nodes[parser->node.count];
         *node = zero_node;
     }
+
+    parser->node.count++;
 
     return node;
 }
@@ -497,6 +490,18 @@ static void nt_print_log(char *fmt, ...) {
     va_start (args, fmt);
     vfprintf(stderr, fmt, args);
     va_end(args);
+}
+
+static size_t nt_long_to_size(long a) {
+    return a < 0 ? 0 : (size_t) a;
+}
+
+static long nt_size_to_long(size_t a) {
+    return a > LONG_MAX ? LONG_MAX : (long) a;
+}
+
+static int nt_size_to_int(size_t a) {
+    return a > INT_MAX ? INT_MAX : (int) a;
 }
 
 #endif
