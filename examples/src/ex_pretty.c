@@ -9,34 +9,51 @@ const char input_data[] = {
 
 static void pretty_print(NT_NODE *node, size_t depth) {
     if (node->data) {
-        if (node->type != NT_STRING) {
-            for (size_t i=0; i<depth; ++i) {
-                printf("%s", "    ");
+        switch (node->type) {
+            case NT_STRING:
+            case NT_EMPTY_LINE: {
+                break;
+            }
+            default: {
+                for (size_t i=0; i<depth; ++i) {
+                    printf("%s", "    ");
+                }
+
+                break;
             }
         }
 
         const char *prefix = "";
-        const char *suffix = "\n";
+        const char *suffix = "\x1b[0m\n";
 
         switch (node->type) {
+            case NT_NONE: {
+                prefix = "\x1b[7;37m";
+                break;
+            }
             case NT_INVALID: {
                 prefix = "\x1b[7;31m";
-                suffix = "\x1b[0m\n";
                 break;
             }
             case NT_COMMENT: {
-                prefix = "\x1b[33m#";
-                suffix = "\x1b[0m\n";
+                prefix = "\x1b[33m";
+                suffix = "";
+                break;
+            }
+            case NT_LIST_ITEM: {
+                prefix = "\x1b[0;34m";
+                suffix = "\x1b[0m";
                 break;
             }
             case NT_KEY: {
                 prefix = "\x1b[1;34m";
-                suffix = "\x1b[0m:\n";
-
-                if (node->children && node->children->type == NT_STRING) {
-                    suffix = "\x1b[0m: ";
-                }
-
+                suffix = "\x1b[0;34m:\x1b[0m ";
+                break;
+            }
+            case NT_LIST_KEY:
+            case NT_DICT_KEY: {
+                prefix = "\x1b[1;34m";
+                suffix = "\x1b[0;34m:\x1b[0m\n";
                 break;
             }
             default: break;
@@ -52,13 +69,16 @@ static void pretty_print(NT_NODE *node, size_t depth) {
 }
 
 int main(int, char **) {
-    constexpr size_t node_count = 32;
+    constexpr size_t node_count = 64;
     NT_NODE nodes[node_count];
     NT_PARSER parser = {};
 
     nt_parser_set_memory(&parser, nodes, node_count);
-    nt_parse(input_data, 0, &parser);
-    pretty_print(parser.node.root, 0);
+
+    if (nt_parse(input_data, 0, &parser) > (int) node_count) {
+        fprintf(stderr, "%s\n", "insufficient memory");
+    }
+    else pretty_print(parser.node.root, 0);
 
     return EXIT_SUCCESS;
 }

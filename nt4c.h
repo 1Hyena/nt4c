@@ -37,7 +37,8 @@ typedef struct NT_PARSER    NT_PARSER;
 typedef enum : unsigned char {
     NT_NONE = 0,
     ////////////////////////////////////////////////////////////////////////////
-    NT_COMMENT, NT_KEY, NT_STRING, NT_DICTIONARY, NT_LIST, NT_INVALID,
+    NT_KEY, NT_STRING, NT_LIST_KEY, NT_LIST_ITEM, NT_DICT_KEY, NT_COMMENT,
+    NT_EMPTY_LINE, NT_INVALID,
     ////////////////////////////////////////////////////////////////////////////
     MAX_NT_TYPE
 } NT_TYPE;
@@ -47,6 +48,7 @@ static NT_NODE *nt_parser_create_node(NT_PARSER *);
 static void     nt_parser_set_memory(NT_PARSER *, NT_NODE *nodes, size_t count);
 static void     nt_node_reverse(NT_NODE *);
 static void     nt_node_set_data(NT_NODE *, const char *data, size_t size);
+static void     nt_node_set_type(NT_NODE *, NT_TYPE);
 static void     nt_node_to_node(NT_NODE *, NT_NODE *to);
 static NT_NODE *nt_node_from_node(NT_NODE *node);
 
@@ -145,7 +147,19 @@ static const char *nt_parser_deserialize(
     size_t spaces = nt_long_to_size(after_spaces - str);
 
     if (after_spaces - str == nt_size_to_long(line_size)) {
-        // Empty lines are ignored.
+        // Empty lines are not ignored.
+        NT_NODE *node = nt_parser_create_node(parser);
+
+        if (node != nullptr) {
+            nt_node_set_type(node, NT_EMPTY_LINE);
+            nt_node_set_data(node, str, line_size);
+
+            if (parent) {
+                nt_node_to_node(node, parent);
+            }
+            else abort();
+        }
+
         return next_line;
     }
 
@@ -162,12 +176,27 @@ static const char *nt_parser_deserialize(
     if (*after_spaces == '#') {
         node = nt_parser_create_node(parser);
 
-        if (node != nullptr) {
-            node->type = NT_COMMENT;
+        NT_NODE *val = nullptr;
 
-            nt_node_set_data(
-                node, after_spaces + 1, line_size - (spaces + 1)
-            );
+        if (line_size - (spaces + 1)) {
+            val = nt_parser_create_node(parser);
+
+            if (val) {
+                nt_node_set_type(val, NT_STRING);
+                nt_node_set_data(
+                    val, after_spaces + 1, line_size - (spaces + 1)
+                );
+
+                if (node) {
+                    nt_node_to_node(val, node);
+                }
+                else abort();
+            }
+        }
+
+        if (node) {
+            nt_node_set_type(node, NT_COMMENT);
+            nt_node_set_data(node, after_spaces, 1);
 
             if (parent) {
                 nt_node_to_node(node, parent);
@@ -181,16 +210,50 @@ static const char *nt_parser_deserialize(
         node = nt_parser_create_node(parser);
 
         if (node) {
-            if (after_spaces + 1 < str + line_size && after_spaces[1] == ' ') {
-                nt_node_set_data(
-                    node, after_spaces + 2, line_size - (spaces + 2)
-                );
+            nt_node_set_type(node, NT_LIST_ITEM);
+            nt_node_set_data(node, after_spaces, 1);
+        }
+
+        if (parent) {
+            if (parent->type == NT_NONE) {
+                nt_node_set_type(parent, NT_LIST_KEY);
+            }
+            else if (parent->type != NT_LIST_KEY) {
+                if (node) {
+                    nt_node_set_type(node, NT_INVALID);
+                }
+            }
+        }
+
+        NT_NODE *val = nullptr;
+
+        if (after_spaces + 1 < str + line_size && after_spaces[1] == ' ') {
+            if (node) {
+                nt_node_set_data(node, after_spaces, 2);
             }
 
-            if (parent) {
-                nt_node_to_node(node, parent);
+            val = nt_parser_create_node(parser);
+
+            if (val) {
+                nt_node_set_type(val, NT_STRING);
+                nt_node_set_data(
+                    val, after_spaces + 2, line_size - (spaces + 2)
+                );
+
+                if (node) {
+                    nt_node_to_node(val, node);
+                }
+                else abort();
             }
-            else abort();
+
+            if (node) {
+                if (parent) {
+                    nt_node_to_node(node, parent);
+                }
+                else abort();
+            }
+
+            return next_line;
         }
     }
     else {
@@ -212,8 +275,7 @@ static const char *nt_parser_deserialize(
             // Could not determine a valid key.
 
             if (node) {
-                node->type = NT_INVALID;
-
+                nt_node_set_type(node, NT_INVALID);
                 nt_node_set_data(node, after_spaces, line_size - spaces);
 
                 if (parent) {
@@ -226,8 +288,6 @@ static const char *nt_parser_deserialize(
         }
 
         if (node) {
-            node->type = NT_KEY;
-
             nt_node_set_data(
                 node, after_spaces, nt_long_to_size(key_op - after_spaces)
             );
@@ -237,7 +297,7 @@ static const char *nt_parser_deserialize(
             NT_NODE *val = nt_parser_create_node(parser);
 
             if (val) {
-                val->type = NT_STRING;
+                nt_node_set_type(val, NT_STRING);
 
                 nt_node_set_data(
                     val, after_key_op,
@@ -245,6 +305,7 @@ static const char *nt_parser_deserialize(
                 );
 
                 if (node) {
+                    nt_node_set_type(node, NT_KEY);
                     nt_node_to_node(val, node);
                 }
                 else abort();
@@ -277,6 +338,10 @@ static const char *nt_parser_deserialize(
         nt_node_reverse(node);
 
         if (parent) {
+            if (parent->type == NT_NONE) {
+                nt_node_set_type(parent, NT_DICT_KEY);
+            }
+
             nt_node_to_node(node, parent);
         }
         else abort();
@@ -319,7 +384,15 @@ static void nt_node_set_data(NT_NODE *node, const char *data, size_t size) {
     node->size = size;
 }
 
+static void nt_node_set_type(NT_NODE *node, NT_TYPE type) {
+    node->type = type;
+}
+
 static void nt_node_to_node(NT_NODE *node, NT_NODE *container) {
+    if (node->parent) {
+        abort(); // Let's require explicit removal from old parent.
+    }
+
     nt_node_from_node(node);
 
     if (container->children) {
