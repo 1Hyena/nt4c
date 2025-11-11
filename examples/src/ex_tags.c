@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 const char input_data[] = {
-#embed "../repository.nt" if_empty('M', 'i', 's', 's', 'i', 'n', 'g', '\n')
+#embed "../multiline.nt" if_empty('M', 'i', 's', 's', 'i', 'n', 'g', '\n')
     , '\0'
 };
 
@@ -32,6 +32,11 @@ static void print_tags(NT_NODE *node, size_t depth) {
             infix   = "INVALID";
             break;
         }
+        case NT_DEEP: {
+            prefix  = "\x1b[7;1;33m";
+            infix   = "DEEP";
+            break;
+        }
         case NT_COMMENT_TAG: {
             prefix  = "\x1b[33m";
             infix   = "COMMENT_TAG";
@@ -47,9 +52,14 @@ static void print_tags(NT_NODE *node, size_t depth) {
             infix   = "LIST_TAG";
             break;
         }
-        case NT_KEY: {
+        case NT_ROL_KEY: {
             prefix  = "\x1b[1;34m";
-            infix   = "KEY";
+            infix   = "ROL_KEY";
+            break;
+        }
+        case NT_MLS_KEY: {
+            prefix  = "\x1b[1;34m";
+            infix   = "MLS_KEY";
             break;
         }
         case NT_LIST_KEY: {
@@ -62,8 +72,12 @@ static void print_tags(NT_NODE *node, size_t depth) {
             infix   = "DICT_KEY";
             break;
         }
-        case NT_STRING: {
-            infix   = "STRING";
+        case NT_ROL: {
+            infix   = "ROL";
+            break;
+        }
+        case NT_MLS: {
+            infix   = "MLS";
             break;
         }
         case NT_NEWLINE: {
@@ -86,6 +100,11 @@ static void print_tags(NT_NODE *node, size_t depth) {
             infix   = "OP_SET_ROL";
             break;
         }
+        case NT_MLS_TAG: {
+            prefix  = "\x1b[0;34m";
+            infix   = "MLS_TAG";
+            break;
+        }
     }
 
     printf("%s%s%s", prefix, infix, suffix);
@@ -95,7 +114,7 @@ static void print_tags(NT_NODE *node, size_t depth) {
             case NT_NONE:
             case NT_DICT_KEY:
             case NT_LIST_KEY:
-            case NT_KEY: {
+            case NT_ROL_KEY: {
                 printf(" (%.*s)", (int) node->size, node->data);
                 break;
             }

@@ -32,50 +32,42 @@
 #include <stdarg.h>
 #include <stdint.h>
 
+#ifndef NT_PARSER_NCOUNT
+#define NT_PARSER_NCOUNT 8
+#endif
+
 typedef struct NT_NODE      NT_NODE;
 typedef struct NT_PARSER    NT_PARSER;
 
-typedef enum : uint16_t {
+typedef enum : uint32_t {
     NT_NONE = 0,
     ////////////////////////////////////////////////////////////////////////////
-    NT_ROOT         = 1 <<  0,          NT_KEY          = 1 <<  1,
-    NT_STRING       = 1 <<  2,          NT_LIST_KEY     = 1 <<  3,
-    NT_LIST_TAG     = 1 <<  4,          NT_DICT_KEY     = 1 <<  5,
-    NT_COMMENT      = 1 <<  6,          NT_COMMENT_TAG  = 1 <<  7,
-    NT_NEWLINE      = 1 <<  8,          NT_SPACE        = 1 <<  9,
-    NT_INVALID      = 1 << 10,          NT_OP_SET       = 1 << 11,
-    NT_OP_SET_ROL   = 1 << 12
+    NT_ROOT         = 1 <<  0,  // node that contains the deserialized nodes
+    NT_ROL_KEY      = 1 <<  1,  // name of the key for a rest-of-line string
+    NT_MLS_KEY      = 1 <<  2,  // name of the key for a multiline string
+    NT_LIST_KEY     = 1 <<  3,  // name of the key for the following list
+    NT_DICT_KEY     = 1 <<  4,  // name of the key for the following dictionary
+    NT_OP_SET       = 1 <<  5,  // node references an assignment operator
+    NT_OP_SET_ROL   = 1 <<  6,  // node references a rest-of-line assigment
+    NT_MLS_TAG      = 1 <<  7,  // node references the tag of a multiline string
+    NT_COMMENT_TAG  = 1 <<  8,  // node references the tag of a comment line
+    NT_LIST_TAG     = 1 <<  9,  // node references the tag of a list item
+    NT_ROL          = 1 << 10,  // node references a rest-of-line string
+    NT_MLS          = 1 << 11,  // node references a multiline string
+    NT_COMMENT      = 1 << 12,  // node references a comment string
+    NT_NEWLINE      = 1 << 13,  // node references the new line data
+    NT_SPACE        = 1 << 14,  // node references the (indentation) spaces
+    NT_INVALID      = 1 << 15,  // node references a segment of invalid input
+    NT_DEEP         = 1 << 16   // node that exceeds the maximum nesting depth
 } NT_TYPE;
 
+// Public API: /////////////////////////////////////////////////////////////////
 static int      nt_parse(const char *text, size_t text_size, NT_PARSER *);
-static NT_NODE *nt_parser_create_node(NT_PARSER *);
-static NT_NODE *nt_parser_create_node_type(NT_PARSER *, NT_TYPE);
 static void     nt_parser_set_memory(NT_PARSER *, NT_NODE *nodes, size_t count);
+static void     nt_parser_set_recursion(NT_PARSER *, size_t depth);
 static void     nt_parser_set_blacklist(NT_PARSER *, NT_TYPE blacklist);
 static void     nt_parser_set_whitelist(NT_PARSER *, NT_TYPE whitelist);
-static bool     nt_parser_allows(NT_PARSER *, NT_TYPE);
-static void     nt_node_reverse(NT_NODE *);
-static void     nt_node_set_data(NT_NODE *, const char *data, size_t size);
-static void     nt_node_set_type(NT_NODE *, NT_TYPE);
-static void     nt_node_to_node(NT_NODE *, NT_NODE *to);
-static NT_NODE *nt_node_from_node(NT_NODE *node);
-
-static const char *nt_parser_deserialize(
-    NT_PARSER *, const char *str, size_t str_sz, size_t indent, NT_NODE *parent
-);
-
-static const char *nt_str_seg_skip_spaces(const char *str, size_t str_sz);
-static const char *nt_str_seg_first_line_size(
-    const char *str, size_t str_sz, size_t *line_size
-);
-static const char *nt_str_seg_skip_key(const char *str, size_t str_sz);
-static const char *nt_str_seg_skip_key_op(const char *str, size_t str_sz);
-static const char *nt_str_seg_skip_byte(const char *str, size_t str_sz);
-
-static void     nt_print_log(char *fmt, ...);
-static size_t   nt_long_to_size(long);
-static long     nt_size_to_long(size_t);
-static int      nt_size_to_int(size_t);
+////////////////////////////////////////////////////////////////////////////////
 
 typedef struct NT_NODE {
     NT_NODE *       next;
@@ -88,6 +80,8 @@ typedef struct NT_NODE {
 } NT_NODE;
 
 typedef struct NT_PARSER {
+    size_t depth; // Maximum nesting depth of the structure being decoded.
+
     struct {
         size_t      count;
         NT_TYPE     blacklist;
@@ -100,7 +94,7 @@ typedef struct NT_PARSER {
     } nest;
 
     struct {
-        NT_NODE     integrated[8];
+        NT_NODE     integrated[NT_PARSER_NCOUNT];
         NT_NODE *   nodes;
         size_t      capacity;
     } memory;
@@ -110,6 +104,35 @@ typedef struct NT_PARSER {
         bool nomem:1;
     } bitset;
 } NT_PARSER;
+
+static NT_NODE *nt_parser_create_node(NT_PARSER *);
+static NT_NODE *nt_parser_create_node_type(NT_PARSER *, NT_TYPE);
+static bool     nt_parser_allows(NT_PARSER *, NT_TYPE);
+static void     nt_node_reverse(NT_NODE *);
+static void     nt_node_set_data(NT_NODE *, const char *data, size_t size);
+static void     nt_node_set_type(NT_NODE *, NT_TYPE);
+static void     nt_node_to_node(NT_NODE *, NT_NODE *to);
+static NT_NODE *nt_node_from_node(NT_NODE *node);
+
+static const char *nt_parser_deserialize(
+    NT_PARSER *, const char *str, size_t str_sz, size_t indent, NT_NODE *parent,
+    size_t depth
+);
+
+static const char *nt_str_seg_skip_spaces(const char *str, size_t str_sz);
+static const char *nt_str_seg_first_line_size(
+    const char *str, size_t str_sz, size_t *line_size
+);
+static const char *nt_str_seg_skip_string_tag(const char *str, size_t str_sz);
+static const char *nt_str_seg_skip_list_tag(const char *str, size_t str_sz);
+static const char *nt_str_seg_skip_key(const char *str, size_t str_sz);
+static const char *nt_str_seg_skip_key_op(const char *str, size_t str_sz);
+static const char *nt_str_seg_skip_byte(const char *str, size_t str_sz);
+
+static void     nt_print_log(char *fmt, ...);
+static size_t   nt_long_to_size(long);
+static long     nt_size_to_long(size_t);
+static int      nt_size_to_int(size_t);
 
 static inline void nt_parser_set_memory(
     NT_PARSER *parser, NT_NODE *nodes, size_t count
@@ -129,6 +152,10 @@ static inline void nt_parser_set_whitelist(
     NT_PARSER *parser, NT_TYPE whitelist
 ) {
     nt_parser_set_blacklist(parser, ~whitelist);
+}
+
+static inline void nt_parser_set_recursion(NT_PARSER *parser, size_t depth) {
+    parser->depth = depth;
 }
 
 static inline bool nt_parser_allows(NT_PARSER *parser, NT_TYPE types) {
@@ -173,7 +200,8 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
 
     while (*s && s < str + str_sz) {
         const char *next = nt_parser_deserialize(
-            parser, s, str_sz - nt_long_to_size(s - str), 0, parser->nest.root
+            parser, s, str_sz - nt_long_to_size(s - str), 0, parser->nest.root,
+            1
         );
 
         if (next == nullptr) {
@@ -196,7 +224,7 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
 
 static const char *nt_parser_deserialize(
     NT_PARSER *parser,
-    const char *str, size_t str_sz, size_t indent, NT_NODE *parent
+    const char *str, size_t str_sz, size_t indent, NT_NODE *parent, size_t depth
 ) {
     size_t line_size;
     const char *next_line = nt_str_seg_first_line_size(str, str_sz, &line_size);
@@ -243,7 +271,26 @@ static const char *nt_parser_deserialize(
         nt_print_log("%.*s\n", nt_size_to_int(line_size), str);
     }
 
-    if (*after_spaces == '#') {
+    if (depth == parser->depth) {
+        NT_NODE *node = nt_parser_create_node_type(parser, NT_DEEP);
+
+        if (node) {
+            nt_node_set_data(node, after_spaces, line_size - spaces);
+            nt_node_to_node(node, parent);
+        }
+
+        if (newline_size) {
+            NT_NODE *newline = nt_parser_create_node_type(parser, NT_NEWLINE);
+
+            if (newline) {
+                nt_node_set_data(newline, end_of_line, newline_size);
+                nt_node_to_node(newline, parent);
+            }
+        }
+
+        return next_line;
+    }
+    else if (*after_spaces == '#') {
         NT_NODE *node = nt_parser_create_node_type(parser, NT_COMMENT_TAG);
 
         if (node) {
@@ -274,15 +321,117 @@ static const char *nt_parser_deserialize(
 
         return next_line;
     }
+    else if (*after_spaces == '>') {
+        const char *tag = after_spaces;
+        const char *rol = nt_str_seg_skip_string_tag(tag, line_size - spaces);
+
+        if (tag == rol) {
+            // Could not determine a valid multiline string tag.
+            NT_NODE *node = nt_parser_create_node_type(parser, NT_INVALID);
+
+            if (node) {
+                nt_node_set_data(node, tag, line_size - spaces);
+                nt_node_to_node(node, parent);
+            }
+
+            if (newline_size) {
+                NT_NODE *newline = nt_parser_create_node_type(
+                    parser, NT_NEWLINE
+                );
+
+                if (newline) {
+                    nt_node_set_data(newline, end_of_line, newline_size);
+                    nt_node_to_node(newline, parent);
+                }
+            }
+
+            return next_line;
+        }
+
+        NT_NODE *node = nt_parser_create_node_type(parser, NT_MLS_TAG);
+        size_t tag_sz = nt_long_to_size(rol - tag);
+
+        if (parent) {
+            if (parent->type == NT_NONE) {
+                nt_node_set_type(parent, NT_MLS_KEY);
+            }
+            else if ((parent->type & (NT_MLS_KEY|NT_LIST_TAG)) == NT_NONE) {
+                if (node) {
+                    nt_node_set_type(node, NT_INVALID);
+                }
+            }
+        }
+
+        if (node) {
+            nt_node_set_data(node, after_spaces, tag_sz);
+            nt_node_to_node(node, parent);
+        }
+
+        NT_NODE *val = nt_parser_create_node_type(parser, NT_MLS);
+
+        if (val) {
+            nt_node_set_data(
+                val, after_spaces + tag_sz, nt_long_to_size(next_line - rol)
+            );
+
+            nt_node_to_node(val, parent);
+        }
+
+        /*
+        NT_NODE *val = nt_parser_create_node_type(parser, NT_ROL);
+
+        if (val) {
+            nt_node_set_data(
+                val, after_spaces + tag_sz, line_size - (spaces + tag_sz)
+            );
+
+            nt_node_to_node(val, parent);
+        }
+
+        if (newline_size) {
+            NT_NODE *newline = nt_parser_create_node_type(parser, NT_NEWLINE);
+
+            if (newline) {
+                nt_node_set_data(newline, end_of_line, newline_size);
+                nt_node_to_node(newline, parent);
+            }
+        }
+        */
+
+        return next_line;
+    }
 
     NT_NODE *nest = nullptr;
 
     if (*after_spaces == '-') {
-        NT_NODE *node = nt_parser_create_node_type(parser, NT_LIST_TAG);
+        const char *tag = after_spaces;
+        const char *rol = nt_str_seg_skip_list_tag(tag, line_size - spaces);
 
-        if (node) {
-            nt_node_set_data(node, after_spaces, 1);
+        if (tag == rol) {
+            // Could not determine a valid list tag.
+            NT_NODE *node = nt_parser_create_node_type(parser, NT_INVALID);
+
+            if (node) {
+                nt_node_set_data(node, tag, line_size - spaces);
+                nt_node_to_node(node, parent);
+            }
+
+            if (newline_size) {
+                NT_NODE *newline = nt_parser_create_node_type(
+                    parser, NT_NEWLINE
+                );
+
+                if (newline) {
+                    nt_node_set_data(newline, end_of_line, newline_size);
+                    nt_node_to_node(newline, parent);
+                }
+            }
+
+            return next_line;
         }
+
+        NT_NODE *node = nt_parser_create_node_type(parser, NT_LIST_TAG);
+        size_t tag_sz = nt_long_to_size(rol - tag);
 
         if (parent) {
             if (parent->type == NT_NONE) {
@@ -295,16 +444,16 @@ static const char *nt_parser_deserialize(
             }
         }
 
-        if (after_spaces + 1 < str + line_size && after_spaces[1] == ' ') {
-            if (node) {
-                nt_node_set_data(node, after_spaces, 2);
-            }
+        if (node) {
+            nt_node_set_data(node, tag, tag_sz);
+        }
 
-            NT_NODE *val = nt_parser_create_node_type(parser, NT_STRING);
+        if (tag_sz == 2) {
+            NT_NODE *val = nt_parser_create_node_type(parser, NT_ROL);
 
             if (val) {
                 nt_node_set_data(
-                    val, after_spaces + 2, line_size - (spaces + 2)
+                    val, tag + tag_sz, line_size - (spaces + tag_sz)
                 );
 
                 nt_node_to_node(val, node ? node : parent);
@@ -368,7 +517,7 @@ static const char *nt_parser_deserialize(
         NT_NODE *node = nullptr;
 
         if (after_key_op && key_op[1] == ' ') {
-            node = nt_parser_create_node_type(parser, NT_KEY);
+            node = nt_parser_create_node_type(parser, NT_ROL_KEY);
         }
         else {
             node = nt_parser_create_node(parser);
@@ -400,7 +549,7 @@ static const char *nt_parser_deserialize(
         }
 
         if (after_key_op && key_op[1] == ' ') {
-            NT_NODE *val = nt_parser_create_node_type(parser, NT_STRING);
+            NT_NODE *val = nt_parser_create_node_type(parser, NT_ROL);
 
             if (val) {
                 nt_node_set_data(
@@ -456,7 +605,7 @@ static const char *nt_parser_deserialize(
 
     while (*s && s < str + str_sz) {
         next_line = nt_parser_deserialize(
-            parser, s, str_sz - nt_long_to_size(s - str), spaces, nest
+            parser, s, str_sz - nt_long_to_size(s - str), spaces, nest, depth+1
         );
 
         if (!next_line) {
@@ -472,6 +621,32 @@ static const char *nt_parser_deserialize(
     }
 
     if (nest) {
+        for (NT_NODE *child = nest->children; child; child = child->next) {
+            if (child->type != NT_MLS) {
+                continue;
+            }
+
+            // The last multiline string must not have a newline in the end.
+
+            size_t last_line_sz;
+            nt_str_seg_first_line_size(child->data, child->size, &last_line_sz);
+
+            const char *end_of_last_line = child->data + last_line_sz;
+            size_t nlsz = child->size - last_line_sz;
+
+            NT_NODE *newline = nt_parser_create_node_type(parser, NT_NEWLINE);
+
+            if (newline) {
+                nt_node_set_data(newline, end_of_last_line, nlsz);
+                nt_node_to_node(newline, nest);
+            }
+
+            child->size = last_line_sz;
+            nt_node_set_type(child, NT_ROL);
+
+            break;
+        }
+
         nt_node_reverse(nest);
 
         if (parent) {
@@ -675,6 +850,72 @@ static const char *nt_str_seg_skip_spaces(const char *str, size_t str_sz) {
 
 static const char *nt_str_seg_skip_byte(const char *str, size_t str_sz) {
     return str_sz ? str + 1 : str;
+}
+
+static const char *nt_str_seg_skip_string_tag(const char *str, size_t str_sz) {
+    const char *s = str;
+
+    while (*s && s < str + str_sz) {
+        const char *next = nt_str_seg_skip_byte(
+            s, str_sz - nt_long_to_size(s - str)
+        );
+
+        if (next == s) {
+            break;
+        }
+
+        if (next - s == 1) {
+            if (s == str) {
+                if (*s != '>') {
+                    return str;
+                }
+            }
+            else {
+                if (*s == ' ' || *s == '\n') {
+                    return next;
+                }
+                else return str;
+            }
+        }
+        else return str;
+
+        s = next;
+    }
+
+    return s;
+}
+
+static const char *nt_str_seg_skip_list_tag(const char *str, size_t str_sz) {
+    const char *s = str;
+
+    while (*s && s < str + str_sz) {
+        const char *next = nt_str_seg_skip_byte(
+            s, str_sz - nt_long_to_size(s - str)
+        );
+
+        if (next == s) {
+            break;
+        }
+
+        if (next - s == 1) {
+            if (s == str) {
+                if (*s != '-') {
+                    return str;
+                }
+            }
+            else {
+                if (*s == ' ' || *s == '\n') {
+                    return next;
+                }
+                else return str;
+            }
+        }
+        else return str;
+
+        s = next;
+    }
+
+    return s;
 }
 
 static const char *nt_str_seg_skip_key(const char *str, size_t str_sz) {

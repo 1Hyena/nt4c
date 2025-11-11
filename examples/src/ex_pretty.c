@@ -3,16 +3,17 @@
 #include <stdlib.h>
 
 const char input_data[] = {
-#embed "../repository.nt" if_empty('M', 'i', 's', 's', 'i', 'n', 'g', '\n')
+#embed "../multiline.nt" if_empty('M', 'i', 's', 's', 'i', 'n', 'g', '\n')
     , '\0'
 };
 
 static void pretty_print(NT_NODE *node, size_t depth) {
     if (node->data) {
         switch (node->type) {
+            case NT_MLS:
             case NT_OP_SET:
             case NT_OP_SET_ROL:
-            case NT_STRING:
+            case NT_ROL:
             case NT_COMMENT: {
                 break;
             }
@@ -42,14 +43,16 @@ static void pretty_print(NT_NODE *node, size_t depth) {
                 suffix = "";
                 break;
             }
+            case NT_MLS_TAG:
             case NT_LIST_TAG: {
                 prefix = "\x1b[0;34m";
                 suffix = "\x1b[0m";
                 break;
             }
+            case NT_MLS_KEY:
             case NT_LIST_KEY:
             case NT_DICT_KEY:
-            case NT_KEY: {
+            case NT_ROL_KEY: {
                 prefix = "\x1b[1;34m";
                 suffix = "\x1b[0m";
                 break;
@@ -61,6 +64,10 @@ static void pretty_print(NT_NODE *node, size_t depth) {
             case NT_OP_SET_ROL: {
                 prefix = "\x1b[0;34m";
                 suffix = "\x1b[0m";
+                break;
+            }
+            case NT_MLS: {
+                suffix = "";
                 break;
             }
             default: break;

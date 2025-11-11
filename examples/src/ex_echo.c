@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 const char input_data[] = {
-#embed "../repository.nt" if_empty('M', 'i', 's', 's', 'i', 'n', 'g', '\n')
+#embed "../multiline.nt" if_empty('M', 'i', 's', 's', 'i', 'n', 'g', '\n')
     , '\0'
 };
 
