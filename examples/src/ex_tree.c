@@ -7,7 +7,7 @@ const char input_data[] = {
     , '\0'
 };
 
-static void print_tags(NT_NODE *node, size_t depth) {
+static void print_tree(NT_NODE *node, size_t depth) {
     for (size_t i=0; i<depth; ++i) {
         printf("%s", "    ");
     }
@@ -130,7 +130,7 @@ static void print_tags(NT_NODE *node, size_t depth) {
     ++depth;
 
     for (NT_NODE *child = node->children; child; child = child->next) {
-        print_tags(child, depth);
+        print_tree(child, depth);
     }
 }
 
@@ -149,7 +149,7 @@ int main(int, char **) {
         return EXIT_FAILURE;
     }
 
-    print_tags(parser.nest.root, 0);
+    print_tree(parser.nest.root, 0);
 
     return EXIT_SUCCESS;
 }
