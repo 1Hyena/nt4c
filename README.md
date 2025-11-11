@@ -72,7 +72,9 @@ becomes full.
 
 Upon successful parsing, `nt_parse()` returns the number of nodes in the input
 text, which can help determine the memory needed for storing the deserialization
-graph. On failure, the function returns a negative number.
+graph. On failure, the function returns a negative number. Notice that only when
+this returned value is non-negative and less than or equal to the output buffer
+capacity, the deserialization graph has been completely stored.
 
 
 # License ######################################################################
