@@ -43,18 +43,18 @@ typedef enum : uint32_t {
     NT_NONE = 0,
     ////////////////////////////////////////////////////////////////////////////
     NT_ROOT         = 1 <<  0,  // node that contains the deserialized nodes
-    NT_ROL_KEY      = 1 <<  1,  // name of the key for a rest-of-line string
-    NT_MLS_KEY      = 1 <<  2,  // name of the key for a multiline string
-    NT_LIST_KEY     = 1 <<  3,  // name of the key for the following list
-    NT_DICT_KEY     = 1 <<  4,  // name of the key for the following dictionary
+    NT_KEY_ROL      = 1 <<  1,  // name of the key for a rest-of-line string
+    NT_KEY_MLS      = 1 <<  2,  // name of the key for a multiline string
+    NT_KEY_LST      = 1 <<  3,  // name of the key for the following list
+    NT_KEY_DCT      = 1 <<  4,  // name of the key for the following dictionary
     NT_OP_SET       = 1 <<  5,  // node references an assignment operator
-    NT_OP_SET_ROL   = 1 <<  6,  // node references a rest-of-line assigment
-    NT_MLS_TAG      = 1 <<  7,  // node references the tag of a multiline string
-    NT_COMMENT_TAG  = 1 <<  8,  // node references the tag of a comment line
-    NT_LIST_TAG     = 1 <<  9,  // node references the tag of a list item
-    NT_ROL          = 1 << 10,  // node references a rest-of-line string
-    NT_MLS          = 1 << 11,  // node references a multiline string
-    NT_COMMENT      = 1 << 12,  // node references a comment string
+    NT_SET_ROL      = 1 <<  6,  // node references a rest-of-line assigment
+    NT_TAG_MLS      = 1 <<  7,  // node references the tag of a multiline string
+    NT_TAG_COM      = 1 <<  8,  // node references the tag of a comment line
+    NT_TAG_LST      = 1 <<  9,  // node references the tag of a list item
+    NT_STR_ROL      = 1 << 10,  // node references a rest-of-line string
+    NT_STR_MLN      = 1 << 11,  // node references a multiline string
+    NT_STR_COM      = 1 << 12,  // node references a comment string
     NT_NEWLINE      = 1 << 13,  // node references the new line data
     NT_SPACE        = 1 << 14,  // node references the (indentation) spaces
     NT_INVALID      = 1 << 15,  // node references a segment of invalid input
@@ -124,7 +124,7 @@ static const char *nt_str_seg_first_line_size(
     const char *str, size_t str_sz, size_t *line_size
 );
 static const char *nt_str_seg_skip_string_tag(const char *str, size_t str_sz);
-static const char *nt_str_seg_skip_list_tag(const char *str, size_t str_sz);
+static const char *nt_str_seg_skip_TAG_LST(const char *str, size_t str_sz);
 static const char *nt_str_seg_skip_key(const char *str, size_t str_sz);
 static const char *nt_str_seg_skip_key_op(const char *str, size_t str_sz);
 static const char *nt_str_seg_skip_byte(const char *str, size_t str_sz);
@@ -291,7 +291,7 @@ static const char *nt_parser_deserialize(
         return next_line;
     }
     else if (*after_spaces == '#') {
-        NT_NODE *node = nt_parser_create_node_type(parser, NT_COMMENT_TAG);
+        NT_NODE *node = nt_parser_create_node_type(parser, NT_TAG_COM);
 
         if (node) {
             nt_node_set_data(node, after_spaces, 1);
@@ -299,7 +299,7 @@ static const char *nt_parser_deserialize(
         }
 
         if (line_size - (spaces + 1)) {
-            NT_NODE *val = nt_parser_create_node_type(parser, NT_COMMENT);
+            NT_NODE *val = nt_parser_create_node_type(parser, NT_STR_COM);
 
             if (val) {
                 nt_node_set_data(
@@ -348,14 +348,14 @@ static const char *nt_parser_deserialize(
             return next_line;
         }
 
-        NT_NODE *node = nt_parser_create_node_type(parser, NT_MLS_TAG);
+        NT_NODE *node = nt_parser_create_node_type(parser, NT_TAG_MLS);
         size_t tag_sz = nt_long_to_size(rol - tag);
 
         if (parent) {
             if (parent->type == NT_NONE) {
-                nt_node_set_type(parent, NT_MLS_KEY);
+                nt_node_set_type(parent, NT_KEY_MLS);
             }
-            else if ((parent->type & (NT_MLS_KEY|NT_LIST_TAG)) == NT_NONE) {
+            else if ((parent->type & (NT_KEY_MLS|NT_TAG_LST)) == NT_NONE) {
                 if (node) {
                     nt_node_set_type(node, NT_INVALID);
                 }
@@ -367,7 +367,7 @@ static const char *nt_parser_deserialize(
             nt_node_to_node(node, parent);
         }
 
-        NT_NODE *val = nt_parser_create_node_type(parser, NT_MLS);
+        NT_NODE *val = nt_parser_create_node_type(parser, NT_STR_MLN);
 
         if (val) {
             nt_node_set_data(
@@ -378,7 +378,7 @@ static const char *nt_parser_deserialize(
         }
 
         /*
-        NT_NODE *val = nt_parser_create_node_type(parser, NT_ROL);
+        NT_NODE *val = nt_parser_create_node_type(parser, NT_STR_ROL);
 
         if (val) {
             nt_node_set_data(
@@ -405,7 +405,7 @@ static const char *nt_parser_deserialize(
 
     if (*after_spaces == '-') {
         const char *tag = after_spaces;
-        const char *rol = nt_str_seg_skip_list_tag(tag, line_size - spaces);
+        const char *rol = nt_str_seg_skip_TAG_LST(tag, line_size - spaces);
 
         if (tag == rol) {
             // Could not determine a valid list tag.
@@ -430,14 +430,14 @@ static const char *nt_parser_deserialize(
             return next_line;
         }
 
-        NT_NODE *node = nt_parser_create_node_type(parser, NT_LIST_TAG);
+        NT_NODE *node = nt_parser_create_node_type(parser, NT_TAG_LST);
         size_t tag_sz = nt_long_to_size(rol - tag);
 
         if (parent) {
             if (parent->type == NT_NONE) {
-                nt_node_set_type(parent, NT_LIST_KEY);
+                nt_node_set_type(parent, NT_KEY_LST);
             }
-            else if (parent->type != NT_LIST_KEY) {
+            else if (parent->type != NT_KEY_LST) {
                 if (node) {
                     nt_node_set_type(node, NT_INVALID);
                 }
@@ -449,7 +449,7 @@ static const char *nt_parser_deserialize(
         }
 
         if (tag_sz == 2) {
-            NT_NODE *val = nt_parser_create_node_type(parser, NT_ROL);
+            NT_NODE *val = nt_parser_create_node_type(parser, NT_STR_ROL);
 
             if (val) {
                 nt_node_set_data(
@@ -517,7 +517,7 @@ static const char *nt_parser_deserialize(
         NT_NODE *node = nullptr;
 
         if (after_key_op && key_op[1] == ' ') {
-            node = nt_parser_create_node_type(parser, NT_ROL_KEY);
+            node = nt_parser_create_node_type(parser, NT_KEY_ROL);
         }
         else {
             node = nt_parser_create_node(parser);
@@ -533,7 +533,7 @@ static const char *nt_parser_deserialize(
             NT_NODE *op = nullptr;
 
             if (after_key_op && key_op[1] == ' ') {
-                op = nt_parser_create_node_type(parser, NT_OP_SET_ROL);
+                op = nt_parser_create_node_type(parser, NT_SET_ROL);
             }
             else {
                 op = nt_parser_create_node_type(parser, NT_OP_SET);
@@ -549,7 +549,7 @@ static const char *nt_parser_deserialize(
         }
 
         if (after_key_op && key_op[1] == ' ') {
-            NT_NODE *val = nt_parser_create_node_type(parser, NT_ROL);
+            NT_NODE *val = nt_parser_create_node_type(parser, NT_STR_ROL);
 
             if (val) {
                 nt_node_set_data(
@@ -565,7 +565,7 @@ static const char *nt_parser_deserialize(
 
                 if (parent) {
                     if (parent->type == NT_NONE) {
-                        nt_node_set_type(parent, NT_DICT_KEY);
+                        nt_node_set_type(parent, NT_KEY_DCT);
                     }
 
                     nt_node_to_node(node, parent);
@@ -622,7 +622,7 @@ static const char *nt_parser_deserialize(
 
     if (nest) {
         for (NT_NODE *child = nest->children; child; child = child->next) {
-            if (child->type != NT_MLS) {
+            if (child->type != NT_STR_MLN) {
                 continue;
             }
 
@@ -642,7 +642,7 @@ static const char *nt_parser_deserialize(
             }
 
             child->size = last_line_sz;
-            nt_node_set_type(child, NT_ROL);
+            nt_node_set_type(child, NT_STR_ROL);
 
             break;
         }
@@ -651,7 +651,7 @@ static const char *nt_parser_deserialize(
 
         if (parent) {
             if (parent->type == NT_NONE) {
-                nt_node_set_type(parent, NT_DICT_KEY);
+                nt_node_set_type(parent, NT_KEY_DCT);
             }
 
             nt_node_to_node(nest, parent);
@@ -885,7 +885,7 @@ static const char *nt_str_seg_skip_string_tag(const char *str, size_t str_sz) {
     return s;
 }
 
-static const char *nt_str_seg_skip_list_tag(const char *str, size_t str_sz) {
+static const char *nt_str_seg_skip_TAG_LST(const char *str, size_t str_sz) {
     const char *s = str;
 
     while (*s && s < str + str_sz) {

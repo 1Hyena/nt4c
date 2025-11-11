@@ -37,47 +37,47 @@ static void print_tree(NT_NODE *node, size_t depth) {
             infix   = "DEEP";
             break;
         }
-        case NT_COMMENT_TAG: {
+        case NT_TAG_COM: {
             prefix  = "\x1b[33m";
-            infix   = "COMMENT_TAG";
+            infix   = "TAG_COM";
             break;
         }
-        case NT_COMMENT: {
+        case NT_STR_COM: {
             prefix  = "\x1b[33m";
-            infix   = "COMMENT";
+            infix   = "STR_COM";
             break;
         }
-        case NT_LIST_TAG: {
+        case NT_TAG_LST: {
             prefix  = "\x1b[0;34m";
-            infix   = "LIST_TAG";
+            infix   = "TAG_LST";
             break;
         }
-        case NT_ROL_KEY: {
+        case NT_KEY_ROL: {
             prefix  = "\x1b[1;34m";
-            infix   = "ROL_KEY";
+            infix   = "KEY_ROL";
             break;
         }
-        case NT_MLS_KEY: {
+        case NT_KEY_MLS: {
             prefix  = "\x1b[1;34m";
-            infix   = "MLS_KEY";
+            infix   = "KEY_MLS";
             break;
         }
-        case NT_LIST_KEY: {
+        case NT_KEY_LST: {
             prefix  = "\x1b[1;34m";
-            infix   = "LIST_KEY";
+            infix   = "KEY_LST";
             break;
         }
-        case NT_DICT_KEY: {
+        case NT_KEY_DCT: {
             prefix  = "\x1b[1;34m";
-            infix   = "DICT_KEY";
+            infix   = "KEY_DCT";
             break;
         }
-        case NT_ROL: {
-            infix   = "ROL";
+        case NT_STR_ROL: {
+            infix   = "STR_ROL";
             break;
         }
-        case NT_MLS: {
-            infix   = "MLS";
+        case NT_STR_MLN: {
+            infix   = "STR_MLN";
             break;
         }
         case NT_NEWLINE: {
@@ -95,14 +95,14 @@ static void print_tree(NT_NODE *node, size_t depth) {
             infix   = "OP_SET";
             break;
         }
-        case NT_OP_SET_ROL: {
+        case NT_SET_ROL: {
             prefix  = "\x1b[0;34m";
-            infix   = "OP_SET_ROL";
+            infix   = "SET_ROL";
             break;
         }
-        case NT_MLS_TAG: {
+        case NT_TAG_MLS: {
             prefix  = "\x1b[0;34m";
-            infix   = "MLS_TAG";
+            infix   = "TAG_MLS";
             break;
         }
     }
@@ -112,9 +112,9 @@ static void print_tree(NT_NODE *node, size_t depth) {
     if (node->data) {
         switch (node->type) {
             case NT_NONE:
-            case NT_DICT_KEY:
-            case NT_LIST_KEY:
-            case NT_ROL_KEY: {
+            case NT_KEY_DCT:
+            case NT_KEY_LST:
+            case NT_KEY_ROL: {
                 printf(" (%.*s)", (int) node->size, node->data);
                 break;
             }
