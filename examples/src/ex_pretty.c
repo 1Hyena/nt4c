@@ -87,8 +87,11 @@ int main(int, char **) {
         fprintf(
             stderr, "insufficient memory for %lu nodes\n", parser.node.count
         );
+
+        return EXIT_FAILURE;
     }
-    else pretty_print(parser.node.root, 0);
+
+    pretty_print(parser.node.root, 0);
 
     return EXIT_SUCCESS;
 }
