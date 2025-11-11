@@ -23,7 +23,7 @@ standard of the C programming language. It includes the following features:
 
 * **Compliance:** NT4C aims to comply with the latest version of the
   [NestedText specification](https://nestedtext.org/). However, it is currently
-  only partially compliant with the
+  only compliant with the
   [Minimal NestedText](https://nestedtext.org/en/latest/minimal-nestedtext.html)
   specification.
 
