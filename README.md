@@ -54,27 +54,25 @@ standard of the C programming language. It includes the following features:
 
 ### Parsing NestedText #########################################################
 
-If you need just to parse a NestedText document, you need to include `nt4c.h`
-directly to your code base as the parser is only implemented in the single C
-header file.
+To parse a NestedText document, include `nt4c.h` directly in your codebase as
+the parser is implemented in a single C header file.
 
-The main provided function is `nt_parse()`. It takes a text in the NestedText
-syntax and a pointer to the `NT_PARSER` structure which provides the means to
-fine tune the deserialization process.
+The main function provided is `nt_parse()`, which takes a text in NestedText
+syntax and a pointer to the `NT_PARSER` structure for fine-tuning the
+deserialization process.
 
-The parser structure stores the parsing configuration and the state of the
-parsing process. By default, it can hold up to `NT_PARSER_NCOUNT` nodes in its
-integrated internal memory but with the `nt_parser_set_memory` function an
-arbitrary array of `NT_NODE` structures could be used.
+The parser structure stores parsing configuration and the parsing process state.
+By default, it can hold up to `NT_PARSER_NCOUNT` nodes in its internal memory,
+but `nt_parser_set_memory` function allows using an arbitrary array of `NT_NODE`
+structures.
 
-As `nt_parse()` processes the input, it populates the deserialization graph of
-the document with nodes. The parser will continue until the end even if the
-buffer provided for its output gets full.
+During `nt_parse()` execution, the deserialization graph of the document is
+populated with nodes. The parser continues processing even if the output buffer
+becomes full.
 
-On success the `nt_parse()` function returns the number of nodes contained in
-the input text. That number could be used to determine how much memory is needed
-for the storage of the complete deserialization graph. On failure the function
-returns a negative number.
+Upon successful parsing, `nt_parse()` returns the number of nodes in the input
+text, which can help determine the memory needed for storing the deserialization
+graph. On failure, the function returns a negative number.
 
 
 # License ######################################################################
