@@ -7,17 +7,6 @@ const char input_data[] = {
     , '\0'
 };
 
-static void dump_node(NT_NODE *node, size_t depth) {
-    if (node->data) {
-        printf("%.*s", (int) node->size, node->data);
-        ++depth;
-    }
-
-    for (NT_NODE *child = node->children; child; child = child->next) {
-        dump_node(child, depth);
-    }
-}
-
 int main(int, char **) {
     constexpr size_t node_count = 128;
     NT_NODE nodes[node_count];
@@ -33,7 +22,9 @@ int main(int, char **) {
         return EXIT_FAILURE;
     }
 
-    dump_node(parser.node.root, 0);
+    for (NT_NODE *it = parser.nest.begin; it < parser.nest.end; ++it) {
+        printf("%.*s", (int) it->size, it->data);
+    }
 
     return EXIT_SUCCESS;
 }

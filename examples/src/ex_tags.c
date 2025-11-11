@@ -130,7 +130,7 @@ int main(int, char **) {
         return EXIT_FAILURE;
     }
 
-    print_tags(parser.node.root, 0);
+    print_tags(parser.nest.root, 0);
 
     return EXIT_SUCCESS;
 }

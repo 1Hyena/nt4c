@@ -3,13 +3,9 @@
 #include <stdlib.h>
 
 int main(int, char **) {
-    constexpr size_t node_count = 8;
-    NT_NODE nodes[node_count];
     NT_PARSER parser = {};
 
-    nt_parser_set_memory(&parser, nodes, node_count);
-
-    if (nt_parse("hello: world\n", 0, &parser) > (int) node_count) {
+    if (nt_parse("hello world", 0, &parser) > (int) parser.memory.capacity) {
         fprintf(
             stderr, "insufficient memory for %lu nodes\n", parser.node.count
         );
@@ -17,12 +13,10 @@ int main(int, char **) {
         return EXIT_FAILURE;
     }
 
-    for (size_t i=0; i<parser.node.count; ++i) {
-        NT_NODE *node = &parser.memory.nodes[i];
+    NT_NODE *content = parser.nest.begin;
 
-        if (node->data) {
-            printf("%.*s", (int) node->size, node->data);
-        }
+    if (content) {
+        printf("%.*s\n", (int) content->size, content->data);
     }
 
     return EXIT_SUCCESS;

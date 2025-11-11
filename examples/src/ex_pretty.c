@@ -91,7 +91,7 @@ int main(int, char **) {
         return EXIT_FAILURE;
     }
 
-    pretty_print(parser.node.root, 0);
+    pretty_print(parser.nest.root, 0);
 
     return EXIT_SUCCESS;
 }

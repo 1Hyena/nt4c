@@ -89,18 +89,25 @@ typedef struct NT_NODE {
 
 typedef struct NT_PARSER {
     struct {
-        NT_NODE *   root;
         size_t      count;
         NT_TYPE     blacklist;
     } node;
 
     struct {
+        NT_NODE *   root;
+        NT_NODE *   begin;
+        NT_NODE *   end;
+    } nest;
+
+    struct {
+        NT_NODE     integrated[8];
         NT_NODE *   nodes;
-        size_t      count;
+        size_t      capacity;
     } memory;
 
     struct {
         bool debug:1;
+        bool nomem:1;
     } bitset;
 } NT_PARSER;
 
@@ -108,7 +115,8 @@ static inline void nt_parser_set_memory(
     NT_PARSER *parser, NT_NODE *nodes, size_t count
 ) {
     parser->memory.nodes = nodes;
-    parser->memory.count = count;
+    parser->memory.capacity = count;
+    parser->bitset.nomem = !count;
 }
 
 static inline void nt_parser_set_blacklist(
@@ -133,12 +141,31 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
     if (!parser) {
         parser = &default_parser;
     }
+    else {
+        if (parser->memory.capacity == 0
+        &&  parser->memory.nodes == nullptr
+        &&  parser->bitset.nomem == false) {
+            // Parser's memory seems to be in the default state. In this case we
+            // use the integrated memory.
 
-    parser->node.count = 0;
-    parser->node.root = nt_parser_create_node_type(parser, NT_ROOT);
+            nt_parser_set_memory(
+                parser, parser->memory.integrated, (
+                    sizeof(parser->memory.integrated) /
+                    sizeof(parser->memory.integrated[0])
+                )
+            );
+        }
 
-    if (parser->node.root) {
-        nt_node_set_type(parser->node.root, NT_ROOT);
+        parser->node.count  = 0;
+        parser->nest.begin  = nullptr;
+        parser->nest.end    = nullptr;
+        parser->nest.root   = nullptr;
+    }
+
+    nt_parser_create_node_type(parser, NT_ROOT);
+
+    if (parser->nest.root) {
+        nt_node_set_type(parser->nest.root, NT_ROOT);
     }
 
     const char *s = str;
@@ -146,7 +173,7 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
 
     while (*s && s < str + str_sz) {
         const char *next = nt_parser_deserialize(
-            parser, s, str_sz - nt_long_to_size(s - str), 0, parser->node.root
+            parser, s, str_sz - nt_long_to_size(s - str), 0, parser->nest.root
         );
 
         if (next == nullptr) {
@@ -160,8 +187,8 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
         s = next;
     }
 
-    if (parser->node.root) {
-        nt_node_reverse(parser->node.root);
+    if (parser->nest.root) {
+        nt_node_reverse(parser->nest.root);
     }
 
     return nt_size_to_int(parser->node.count);
@@ -464,12 +491,20 @@ static NT_NODE *nt_parser_create_node(NT_PARSER *parser) {
     static NT_NODE zero_node;
     NT_NODE *node = nullptr;
 
-    if (parser->node.count < parser->memory.count) {
+    if (parser->node.count < parser->memory.capacity) {
         node = &parser->memory.nodes[parser->node.count];
         *node = zero_node;
     }
 
     parser->node.count++;
+
+    if (node && parser->nest.root) {
+        if (parser->nest.begin == nullptr) {
+            parser->nest.begin = node;
+        }
+
+        parser->nest.end = node + 1;
+    }
 
     return node;
 }
@@ -483,6 +518,12 @@ static NT_NODE *nt_parser_create_node_type(NT_PARSER *parser, NT_TYPE type) {
 
     if (node) {
         nt_node_set_type(node, type);
+
+        if (type == NT_ROOT && parser->nest.root == nullptr) {
+            parser->nest.root = node;
+            parser->nest.begin = nullptr;
+            parser->nest.end = nullptr;
+        }
     }
 
     return node;
