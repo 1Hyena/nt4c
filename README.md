@@ -50,6 +50,33 @@ standard of the C programming language. It includes the following features:
 * **Permissive license:** NT4C is available under the [MIT license](LICENSE).
 
 
+## Using NT4C ##################################################################
+
+### Parsing NestedText #########################################################
+
+If you need just to parse a NestedText document, you need to include `nt4c.h`
+directly to your code base as the parser is only implemented in the single C
+header file.
+
+The main provided function is `nt_parse()`. It takes a text in the NestedText
+syntax and a pointer to the `NT_PARSER` structure which provides the means to
+fine tune the deserialization process.
+
+The parser structure stores the parsing configuration and the state of the
+parsing process. By default, it can hold up to `NT_PARSER_NCOUNT` nodes in its
+integrated internal memory but with the `nt_parser_set_memory` function an
+arbitrary array of `NT_NODE` structures could be used.
+
+As `nt_parse()` processes the input, it populates the deserialization graph of
+the document with nodes. The parser will continue until the end even if the
+buffer provided for its output gets full.
+
+On success the `nt_parse()` function returns the number of nodes contained in
+the input text. That number could be used to determine how much memory is needed
+for the storage of the complete deserialization graph. On failure the function
+returns a negative number.
+
+
 # License ######################################################################
 
 NT4C has been authored by Erich Erstu and is released under the [MIT](LICENSE)
