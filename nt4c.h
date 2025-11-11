@@ -377,27 +377,6 @@ static const char *nt_parser_deserialize(
             nt_node_to_node(val, parent);
         }
 
-        /*
-        NT_NODE *val = nt_parser_create_node_type(parser, NT_STR_ROL);
-
-        if (val) {
-            nt_node_set_data(
-                val, after_spaces + tag_sz, line_size - (spaces + tag_sz)
-            );
-
-            nt_node_to_node(val, parent);
-        }
-
-        if (newline_size) {
-            NT_NODE *newline = nt_parser_create_node_type(parser, NT_NEWLINE);
-
-            if (newline) {
-                nt_node_set_data(newline, end_of_line, newline_size);
-                nt_node_to_node(newline, parent);
-            }
-        }
-        */
-
         return next_line;
     }
 
