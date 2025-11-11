@@ -21,30 +21,30 @@ The following resources can explain more if you are unfamiliar with it:
 NT4C is a NestedText parser implementation written in accordance with the C23
 standard of the C programming language. It includes the following features:
 
-* **Compliance:** Generally, NT4C aims to be compliant to the latest version of
-  [NestedText specification](https://nestedtext.org/). However, currently we are
-  only partially compliant to the
+* **Compliance:** NT4C aims to comply with the latest version of the
+  [NestedText specification](https://nestedtext.org/). However, it is currently
+  only partially compliant with the
   [Minimal NestedText](https://nestedtext.org/en/latest/minimal-nestedtext.html)
   specification.
 
-* **Performance:** NT4C is fast considering that it does not do any heap memory
-  allocations. Also, it avoids needless memory copying by referencing the input
-  text directly in the resulting graph.
+* **Performance:** NT4C is fast as it does not involve any heap memory
+  allocations. It also avoids unnecessary memory copying by directly referencing
+  the input text in the resulting graph.
 
-* **Compactness:** NT4C parser is implemented in one header file. There are no
-  dependencies other than standard C library.
+* **Compactness:** The NT4C parser is implemented in a single header file with
+  no dependencies other than the standard C library.
 
-* **Embedding:** NT4C parser is easy to reuse in other projects, its API is
-  very straightforward: There is actually just one function, `nt_parse()`.
+* **Embedding:** The NT4C parser is easy to reuse in other projects, with a
+  straightforward API that consists of just one function, `nt_parse()`.
 
-* **Tree model:** NT4C parses the complete document and constructs a graph (DOM)
-  where each node references directly a segment from the input string.
+* **Tree model:** NT4C parses the entire document and constructs a graph (DOM)
+  where each node directly references a segment from the input string.
 
-* **Portability:** NT4C builds and works on Linux. It should be simple to make
-  it run also on most other platforms, at least as long as the platform provides
+* **Portability:** NT4C builds and functions on Linux. It should be relatively
+  simple to make it run on most other platforms as long as the platform provides
   the C standard library.
 
-* **Encoding:** NT4C expects UTF-8 encoding of the input text. It does not
+* **Encoding:** NT4C expects UTF-8 encoding of the input text and does not
   attempt to detect Unicode encoding errors.
 
 * **Permissive license:** NT4C is available under the [MIT license](LICENSE).
