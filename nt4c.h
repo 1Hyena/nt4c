@@ -434,6 +434,9 @@ static const char *nt_parser_deserialize(
             if (parent->type & NT_KEY_LST) {
                 nt_node_set_type(parent, NT_KEY_LST);
             }
+            else if (parent->type & NT_TAG_LST_LST) {
+                nt_node_set_type(parent, NT_TAG_LST_LST);
+            }
             else {
                 if (node) {
                     nt_node_set_type(node, NT_INVALID);
@@ -564,6 +567,9 @@ static const char *nt_parser_deserialize(
                     if (parent->type & NT_KEY_DCT) {
                         nt_node_set_type(parent, NT_KEY_DCT);
                     }
+                    else if (parent->type & NT_TAG_LST_DCT) {
+                        nt_node_set_type(parent, NT_TAG_LST_DCT);
+                    }
 
                     nt_node_to_node(node, parent);
                 }
@@ -649,6 +655,9 @@ static const char *nt_parser_deserialize(
         if (parent) {
             if (parent->type & NT_KEY_DCT) {
                 nt_node_set_type(parent, NT_KEY_DCT);
+            }
+            else if (parent->type & NT_TAG_LST_DCT) {
+                nt_node_set_type(parent, NT_TAG_LST_DCT);
             }
 
             nt_node_to_node(nest, parent);
