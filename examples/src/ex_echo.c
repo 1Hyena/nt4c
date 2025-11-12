@@ -21,9 +21,13 @@ int main(int, char **) {
 
         return EXIT_FAILURE;
     }
-
+    const char *last_str = nullptr;
     for (NT_NODE *it = parser.nest.begin; it < parser.nest.end; ++it) {
         printf("%.*s", (int) it->size, it->data);
+
+        if (it->data < last_str) { // TODO: remove this block
+            abort();
+        }
     }
 
     return EXIT_SUCCESS;

@@ -11,7 +11,9 @@ static void pretty_print(NT_NODE *node, size_t depth) {
     if (node->data) {
         switch (node->type) {
             case NT_STR_MLN:
-            case NT_OP_SET:
+            case NT_SET_MLS:
+            case NT_SET_DCT:
+            case NT_SET_LST:
             case NT_SET_ROL:
             case NT_STR_ROL:
             case NT_STR_COM: {
@@ -63,7 +65,9 @@ static void pretty_print(NT_NODE *node, size_t depth) {
                 suffix = "\x1b[0m";
                 break;
             }
-            case NT_OP_SET: {
+            case NT_SET_MLS:
+            case NT_SET_DCT:
+            case NT_SET_LST: {
                 prefix = "\x1b[0;34m";
                 break;
             }

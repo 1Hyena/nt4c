@@ -105,9 +105,19 @@ static void print_tree(NT_NODE *node, size_t depth) {
             infix   = "SPACE";
             break;
         }
-        case NT_OP_SET: {
+        case NT_SET_MLS: {
             prefix  = "\x1b[0;34m";
-            infix   = "OP_SET";
+            infix   = "SET_MLS";
+            break;
+        }
+        case NT_SET_DCT: {
+            prefix  = "\x1b[0;34m";
+            infix   = "SET_DCT";
+            break;
+        }
+        case NT_SET_LST: {
+            prefix  = "\x1b[0;34m";
+            infix   = "SET_LST";
             break;
         }
         case NT_SET_ROL: {
