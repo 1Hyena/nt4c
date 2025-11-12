@@ -42,6 +42,7 @@ typedef struct NT_PARSER    NT_PARSER;
 typedef enum : uint32_t {
     NT_NONE = 0,
     ////////////////////////////////////////////////////////////////////////////
+    // TODO: figure out what to do when NT_ROOT contains mixed element types
     NT_ROOT         = 1 <<  0,  // node that contains the deserialized nodes
     NT_KEY_ROL      = 1 <<  1,  // name of the key for a rest-of-line string
     NT_KEY_MLS      = 1 <<  2,  // name of the key for a multiline string
