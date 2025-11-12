@@ -22,9 +22,24 @@ static void print_tree(NT_NODE *node, size_t depth) {
             infix   = "NONE";
             break;
         }
-        case NT_ROOT: {
+        case NT_TOP_ROL: {
             prefix  = "\x1b[1;37m";
-            infix   = "ROOT";
+            infix   = "TOP_ROL";
+            break;
+        }
+        case NT_TOP_LST: {
+            prefix  = "\x1b[1;37m";
+            infix   = "TOP_LST";
+            break;
+        }
+        case NT_TOP_MLS: {
+            prefix  = "\x1b[1;37m";
+            infix   = "TOP_MLS";
+            break;
+        }
+        case NT_TOP_DCT: {
+            prefix  = "\x1b[1;37m";
+            infix   = "TOP_DCT";
             break;
         }
         case NT_INVALID: {
@@ -165,7 +180,7 @@ int main(int, char **) {
     NT_PARSER parser = {};
 
     nt_parser_set_memory(&parser, nodes, node_count);
-    //nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE|NT_KEY_MLS);
+    nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE);
 
     if (nt_parse(input_data, 0, &parser) > (int) node_count) {
         fprintf(
