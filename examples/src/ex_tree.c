@@ -165,6 +165,7 @@ int main(int, char **) {
     NT_PARSER parser = {};
 
     nt_parser_set_memory(&parser, nodes, node_count);
+    //nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE|NT_KEY_MLS);
 
     if (nt_parse(input_data, 0, &parser) > (int) node_count) {
         fprintf(

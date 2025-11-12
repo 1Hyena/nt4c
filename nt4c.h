@@ -734,6 +734,8 @@ static const char *nt_parser_deserialize(
         return s;
     }
 
+    // TODO: if nest->type is blacklisted, delete the nest and reduce node count
+
     for (NT_NODE *child = nest->children; child; child = child->next) {
         if (child->type != NT_STR_MLN) {
             continue;
