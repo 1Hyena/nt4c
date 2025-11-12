@@ -47,9 +47,24 @@ static void print_tree(NT_NODE *node, size_t depth) {
             infix   = "STR_COM";
             break;
         }
-        case NT_TAG_LST: {
+        case NT_TAG_LST_ROL: {
             prefix  = "\x1b[0;34m";
-            infix   = "TAG_LST";
+            infix   = "TAG_LST_ROL";
+            break;
+        }
+        case NT_TAG_LST_MLS: {
+            prefix  = "\x1b[0;34m";
+            infix   = "TAG_LST_MLS";
+            break;
+        }
+        case NT_TAG_LST_LST: {
+            prefix  = "\x1b[0;34m";
+            infix   = "TAG_LST_LST";
+            break;
+        }
+        case NT_TAG_LST_DCT: {
+            prefix  = "\x1b[0;34m";
+            infix   = "TAG_LST_DCT";
             break;
         }
         case NT_KEY_ROL: {

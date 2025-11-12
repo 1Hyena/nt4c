@@ -43,8 +43,14 @@ static void pretty_print(NT_NODE *node, size_t depth) {
                 suffix = "";
                 break;
             }
+            case NT_TAG_LST_DCT:
+            case NT_TAG_LST_LST:
+            case NT_TAG_LST_MLS: {
+                prefix = "\x1b[0;34m";
+                break;
+            }
             case NT_TAG_MLS:
-            case NT_TAG_LST: {
+            case NT_TAG_LST_ROL: {
                 prefix = "\x1b[0;34m";
                 suffix = "\x1b[0m";
                 break;
