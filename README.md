@@ -78,6 +78,21 @@ The deserialization graph is considered fully stored only when the value
 returned by `nt_parse()` is non-negative and less than or equal to the output
 buffer capacity.
 
+### Examples ###################################################################
+
+#### ex-hello ##################################################################
+
+https://github.com/1Hyena/nt4c/blob/b20cc895dc399e7b94e1d28a7a6367c5bedf5ab1/examples/src/ex_hello.c#L5-L23
+
+![screenshot](img/ex-hello.png "console output of ex_hello")
+
+
+#### ex-pretty #################################################################
+
+https://github.com/1Hyena/nt4c/blob/b20cc895dc399e7b94e1d28a7a6367c5bedf5ab1/examples/ugly.nt#L1-L29
+
+![screenshot](img/ex-pretty.png "console output of ex_pretty")
+
 
 # License ######################################################################
 
