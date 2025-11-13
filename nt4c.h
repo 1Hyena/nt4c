@@ -121,7 +121,6 @@ static void     nt_node_reverse(NT_NODE *);
 static void     nt_node_set_data(NT_NODE *, const char *data, size_t size);
 static void     nt_node_set_type(NT_NODE *, NT_TYPE);
 static void     nt_node_to_node(NT_NODE *, NT_NODE *to);
-static void     nt_node_to_after_node(NT_NODE *, NT_NODE *after_node);
 static NT_NODE *nt_node_from_node(NT_NODE *node);
 
 static const char *nt_parser_deserialize(
@@ -578,6 +577,22 @@ static const char *nt_parser_deserialize(
 
             return next_line;
         }
+        else {
+            // We reserve an empty rest-of-line string right after the
+            // ambiguous list tag for the case where no value is found from its
+            // nest. The list tag will then default to holding the value of this
+            // empty rest-of-line string.
+
+            NT_NODE *rol_node = nt_parser_create_node_type(parser, NT_STR_ROL);
+
+            if (rol_node) {
+                nt_node_set_data(
+                    rol_node, tag + tag_sz, line_size - (spaces + tag_sz)
+                );
+
+                nt_node_to_node(rol_node, tag_node);
+            }
+        }
 
         nest = tag_node;
     }
@@ -684,9 +699,7 @@ static const char *nt_parser_deserialize(
         }
 
         if (after_key_op && key_op[1] == ' ') {
-            NT_NODE *val_node = nt_parser_create_node_type(
-                parser, NT_STR_ROL
-            );
+            NT_NODE *val_node = nt_parser_create_node_type(parser, NT_STR_ROL);
 
             if (val_node) {
                 nt_node_set_data(
@@ -715,6 +728,23 @@ static const char *nt_parser_deserialize(
 
             return next_line;
         }
+        else {
+            // We reserve an empty rest-of-line string right after the
+            // ambiguous assignment operator for the case where no value is
+            // found from the nest. The key will then default to the empty
+            // rest-of-line string.
+
+            NT_NODE *rol_node = nt_parser_create_node_type(parser, NT_STR_ROL);
+
+            if (rol_node) {
+                nt_node_set_data(
+                    rol_node, after_key_op,
+                    line_size - nt_long_to_size(after_key_op - str)
+                );
+
+                nt_node_to_node(rol_node, key_node);
+            }
+        }
 
         nest = key_node;
     }
@@ -724,7 +754,7 @@ static const char *nt_parser_deserialize(
 
         if (newline) {
             nt_node_set_data(newline, end_of_line, newline_size);
-            nt_node_to_node(newline, nest ? nest : parent);
+            nt_node_to_node(newline, nest);
         }
     }
 
@@ -804,35 +834,66 @@ static const char *nt_parser_deserialize(
 
     nt_node_reverse(nest);
 
-    if (nest->type == any_collection.list_tags
-    ||  nest->type == any_collection.keys) {
-        // Nest type remains ambiguous. Resolve it as empty rest-of-line string.
-        NT_NODE *rol_node = nt_parser_create_node_type(parser, NT_STR_ROL);
-
-        if (rol_node) {
-            nt_node_set_data(rol_node, nest->data + nest->size, 0);
-            nt_node_to_node(rol_node, nest);
-
-            for (NT_NODE *n = nest->children; n; n = n->next) {
-                if (n->type != any_collection.setters) {
-                    continue;
-                }
-
-                // We want the empty string to begin after the assignment
-                // operator, if it exists.
-
-                nt_node_set_data(rol_node, n->data + n->size, 0);
-                nt_node_from_node(rol_node);
-                nt_node_to_after_node(rol_node, n);
-
-                // TODO: swap places so that positions in the memory would also
-                // be subsequent.
-
-                break;
-            }
-        }
+    if (nest->type & (NT_KEY_ROL|NT_TAG_LST_ROL)) {
+        // If the nest type remains ambiguous, default to the storage of the
+        // empty rest-of-line placeholder string that must have been added
+        // earlier in the anticipation of this condition.
 
         nt_node_set_type(nest, nest->type & (NT_KEY_ROL|NT_TAG_LST_ROL));
+    }
+    else {
+        // If the nest type was resolved during the deserialization of its
+        // children, then the placeholder rest-of-line string must be removed.
+        // However, since we should not leave any empty gaps in the output node
+        // array (parser->memory.nodes), we must shift everything after the ROL
+        // string back by one. After that, the tracked node count can simply be
+        // deduced by one.
+
+        NT_NODE *rol_node = nullptr;
+
+        for (NT_NODE *n = nest->children; n; n = n->next) {
+            if (n->type != NT_STR_ROL) {
+                continue;
+            }
+
+            rol_node = n;
+            break;
+        }
+
+        if (rol_node) {
+            nt_node_from_node(rol_node);
+
+            for (NT_NODE *n = rol_node; n < parser->nest.end; ++n) {
+                // This segment of code is highly optimized (read: dangerous).
+                // It assumes that outside this scope no pointers exist that
+                // point to nodes with addresses higher than or equal to the
+                // address of rol_node. If this assumption is wrong, then bad
+                // things will happen.
+
+                if (n + 1 == parser->nest.end) {
+                    parser->nest.end--;
+                    parser->node.count--;
+                    break;
+                }
+
+                *n = *(n + 1);
+
+                if (n->parent >= rol_node) {
+                    n->parent--;
+                }
+
+                if (n->prev) {
+                    if (n->prev >= rol_node) {
+                        n->prev--;
+                    }
+
+                    n->prev->next = n;
+                }
+                else {
+                    n->parent->children = n;
+                }
+            }
+        }
     }
 
     for (NT_NODE *child = nest->children; child; child = child->next) {
@@ -887,6 +948,23 @@ static const char *nt_parser_deserialize(
     }
     else {
         nt_node_to_node(nest, parent);
+
+        for (NT_NODE *child = nest->children; child; child = child->next) {
+            // If the nest ends with a newline node, relocate it to the end of
+            // the current parent as trailing newline nodes are not considered
+            // an integral part of the nest.
+
+            if (child->next != nullptr) {
+                continue;
+            }
+
+            if (child->type == NT_NEWLINE) {
+                nt_node_from_node(child);
+                nt_node_to_node(child, parent);
+            }
+
+            break;
+        }
     }
 
     return s;
@@ -970,27 +1048,6 @@ static void nt_node_to_node(NT_NODE *node, NT_NODE *container) {
     node->next = container->children;
     container->children = node;
     node->parent = container;
-}
-
-static void nt_node_to_after_node(NT_NODE *node, NT_NODE *after_node) {
-    if (node->parent) {
-        abort(); // Let's require explicit removal from old parent.
-    }
-
-    if (after_node == nullptr) {
-        abort();
-    }
-
-    nt_node_from_node(node);
-
-    if (after_node->next) {
-        node->next = after_node->next;
-        after_node->next->prev = node;
-    }
-
-    after_node->next = node;
-    node->prev = after_node;
-    node->parent = after_node->parent;
 }
 
 static NT_NODE *nt_node_from_node(NT_NODE *node) {

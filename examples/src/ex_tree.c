@@ -184,7 +184,9 @@ int main(int, char **) {
     NT_NODE nodes[node_count];
     NT_PARSER parser = {};
 
-    for (size_t i=0; i< 146; ++i) {
+size_t i = node_count;
+
+    //for (size_t i=0; i< 146; ++i) {
         nt_parser_set_memory(&parser, nodes, i /*node_count*/);
 
         //nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE);
@@ -207,9 +209,9 @@ int main(int, char **) {
                 stderr, "[%3lu] sufficient memory for %lu nodes (result was %d)\n", i, parser.node.count, result
             );
 
-            break;
+            //break;
         }
-    }
+    //}
 
 
 

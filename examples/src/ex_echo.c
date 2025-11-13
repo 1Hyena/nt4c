@@ -8,7 +8,7 @@ const char input_data[] = {
 };
 
 int main(int, char **) {
-    constexpr size_t node_count = 141;
+    constexpr size_t node_count = 200;
     NT_NODE nodes[node_count];
     NT_PARSER parser = {};
 
