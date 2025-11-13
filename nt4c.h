@@ -383,16 +383,14 @@ static const char *nt_parser_deserialize(
             nt_node_to_node(tag_node, parent);
         }
 
-        if (line_size - (spaces + 1)) {
-            NT_NODE *val_node = nt_parser_create_node_type(parser, NT_STR_COM);
+        NT_NODE *val_node = nt_parser_create_node_type(parser, NT_STR_COM);
 
-            if (val_node) {
-                nt_node_set_data(
-                    val_node, after_spaces + 1, line_size - (spaces + 1)
-                );
+        if (val_node) {
+            nt_node_set_data(
+                val_node, after_spaces + 1, line_size - (spaces + 1)
+            );
 
-                nt_node_to_node(val_node, parent);
-            }
+            nt_node_to_node(val_node, parent);
         }
 
         if (newline_size) {

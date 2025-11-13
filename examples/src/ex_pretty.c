@@ -2,7 +2,7 @@
 #include "../../nt4c.h"
 #include <stdlib.h>
 
-const char input_data[] = {
+const unsigned char input_data[] = {
 #embed "../ugly.nt" if_empty('M', 'i', 's', 's', 'i', 'n', 'g', '\n')
     , '\0'
 };
@@ -15,6 +15,7 @@ static void pretty_print(NT_NODE *node, size_t depth) {
             case NT_SET_DCT:
             case NT_SET_LST:
             case NT_SET_ROL:
+            case NT_SET_NIL:
             case NT_STR_ROL:
             case NT_STR_COM: {
                 break;
@@ -57,6 +58,7 @@ static void pretty_print(NT_NODE *node, size_t depth) {
                 suffix = "\x1b[0m";
                 break;
             }
+            case NT_KEY_NIL:
             case NT_KEY_MLS:
             case NT_KEY_LST:
             case NT_KEY_DCT:
@@ -65,6 +67,7 @@ static void pretty_print(NT_NODE *node, size_t depth) {
                 suffix = "\x1b[0m";
                 break;
             }
+            case NT_SET_NIL:
             case NT_SET_MLS:
             case NT_SET_DCT:
             case NT_SET_LST: {
@@ -100,7 +103,7 @@ int main(int, char **) {
     nt_parser_set_memory(&parser, nodes, node_count);
     nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE);
 
-    if (nt_parse(input_data, 0, &parser) > (int) node_count) {
+    if (nt_parse((const char *) input_data, 0, &parser) > (int) node_count) {
         fprintf(
             stderr, "insufficient memory for %lu nodes\n", parser.node.count
         );
