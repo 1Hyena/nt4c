@@ -231,7 +231,7 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
         );
 
         if (next == nullptr) {
-            return -1;
+            return -1; // Parse error.
         }
 
         if (next == s) {
