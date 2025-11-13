@@ -80,14 +80,16 @@ buffer capacity.
 
 ### Examples ###################################################################
 
-#### ex-hello ##################################################################
+#### ex_hello ##################################################################
+
+This example shows how to make NT4C parser produce the output `hello world`.
 
 https://github.com/1Hyena/nt4c/blob/b20cc895dc399e7b94e1d28a7a6367c5bedf5ab1/examples/src/ex_hello.c#L5-L23
 
 ![screenshot](img/ex-hello.png "console output of ex_hello")
 
 
-#### ex-pretty #################################################################
+#### ex_pretty #################################################################
 
 https://github.com/1Hyena/nt4c/blob/b20cc895dc399e7b94e1d28a7a6367c5bedf5ab1/examples/ugly.nt#L1-L29
 

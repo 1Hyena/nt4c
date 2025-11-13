@@ -5,19 +5,11 @@
 int main(int, char **) {
     NT_PARSER parser = {};
 
-    if (nt_parse("hello world", 0, &parser) > (int) parser.memory.capacity) {
-        fprintf(
-            stderr, "insufficient memory for %lu nodes\n", parser.node.count
-        );
-
+    if (nt_parse("hello world", 0, &parser) <= 0) {
         return EXIT_FAILURE;
     }
 
-    NT_NODE *content = parser.nest.begin;
-
-    if (content) {
-        printf("%.*s\n", (int) content->size, content->data);
-    }
+    printf("%.*s\n", (int) parser.nest.begin->size, parser.nest.begin->data);
 
     return EXIT_SUCCESS;
 }
