@@ -42,31 +42,34 @@ typedef struct NT_PARSER    NT_PARSER;
 typedef enum : uint32_t {
     NT_NONE = 0,
     ////////////////////////////////////////////////////////////////////////////
-    NT_TOP_DCT      = 1 <<  0,  // root node that contains a dictionary
-    NT_TOP_LST      = 1 <<  1,  // root node that contains a list
-    NT_TOP_MLS      = 1 <<  2,  // root node that contains a multiline string
-    NT_TOP_ROL      = 1 <<  3,  // root node that contains a rest-of-line string
+    NT_TOP_DCT      = 1 <<  0,  // root node contains a dictionary
+    NT_TOP_LST      = 1 <<  1,  // root node contains a list
+    NT_TOP_MLS      = 1 <<  2,  // root node contains a multiline string
+    NT_TOP_NIL      = 1 <<  3,  // root node does not hold any meaningful data
     NT_KEY_ROL      = 1 <<  4,  // name of the key for a rest-of-line string
     NT_KEY_MLS      = 1 <<  5,  // name of the key for a multiline string
     NT_KEY_LST      = 1 <<  6,  // name of the key for the following list
     NT_KEY_DCT      = 1 <<  7,  // name of the key for the following dictionary
-    NT_SET_ROL      = 1 <<  8,  // node references a rest-of-line assigment
-    NT_SET_MLS      = 1 <<  9,  // node references a multiline assigment
-    NT_SET_LST      = 1 << 10,  // node references a list assigment
-    NT_SET_DCT      = 1 << 11,  // node references a dictionary assigment
-    NT_TAG_MLS      = 1 << 12,  // node references the tag of a multiline string
-    NT_TAG_COM      = 1 << 13,  // node references the tag of a comment line
-    NT_TAG_LST_ROL  = 1 << 14,  // tag of the enlisted rest-of-line string
-    NT_TAG_LST_MLS  = 1 << 15,  // tag of the enlisted multiline string
-    NT_TAG_LST_LST  = 1 << 16,  // tag of the enlisted sublist
-    NT_TAG_LST_DCT  = 1 << 17,  // tag of the enlisted dictionary
-    NT_STR_ROL      = 1 << 18,  // node references a rest-of-line string
-    NT_STR_MLN      = 1 << 19,  // node references a multiline string
-    NT_STR_COM      = 1 << 20,  // node references a comment string
-    NT_NEWLINE      = 1 << 21,  // node references the new line data
-    NT_SPACE        = 1 << 22,  // node references the (indentation) spaces
-    NT_INVALID      = 1 << 23,  // node references a segment of invalid input
-    NT_DEEP         = 1 << 24   // node that exceeds the maximum nesting depth
+    NT_KEY_NIL      = 1 <<  8,  // name of the key for missing value
+    NT_SET_ROL      = 1 <<  9,  // node references a rest-of-line assigment
+    NT_SET_MLS      = 1 << 10,  // node references a multiline assigment
+    NT_SET_LST      = 1 << 11,  // node references a list assigment
+    NT_SET_DCT      = 1 << 12,  // node references a dictionary assigment
+    NT_SET_NIL      = 1 << 13,  // node references a nil assignment
+    NT_TAG_MLS      = 1 << 14,  // node references the tag of a multiline string
+    NT_TAG_COM      = 1 << 15,  // node references the tag of a comment line
+    NT_TAG_LST_ROL  = 1 << 16,  // tag of the enlisted rest-of-line string
+    NT_TAG_LST_MLS  = 1 << 17,  // tag of the enlisted multiline string
+    NT_TAG_LST_LST  = 1 << 18,  // tag of the enlisted sublist
+    NT_TAG_LST_DCT  = 1 << 19,  // tag of the enlisted dictionary
+    NT_TAG_LST_NIL  = 1 << 20,  // tag of the enlisted nil value
+    NT_STR_ROL      = 1 << 21,  // node references a rest-of-line string
+    NT_STR_MLN      = 1 << 22,  // node references a multiline string
+    NT_STR_COM      = 1 << 23,  // node references a comment string
+    NT_NEWLINE      = 1 << 24,  // node references the new line data
+    NT_SPACE        = 1 << 25,  // node references the (indentation) spaces
+    NT_INVALID      = 1 << 26,  // node references a segment of invalid input
+    NT_DEEP         = 1 << 27   // node that exceeds the maximum nesting depth
 } NT_TYPE;
 
 // Public API: /////////////////////////////////////////////////////////////////
@@ -178,7 +181,7 @@ static inline bool nt_parser_allows_any(NT_PARSER *parser, NT_TYPE types) {
 
 static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
     constexpr NT_TYPE top_collections = (
-        NT_TOP_DCT|NT_TOP_LST|NT_TOP_MLS|NT_TOP_ROL
+        NT_TOP_DCT | NT_TOP_LST | NT_TOP_MLS | NT_TOP_NIL
     );
 
     NT_PARSER default_parser = {};
@@ -270,17 +273,9 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
 
     nt_node_reverse(top_node);
 
-    if (top_node->type == top_collections) {
-        // Top type remains ambiguous. Resolve it as empty rest-of-line string.
-        NT_NODE *rol_node = nt_parser_create_node_type(parser, NT_STR_ROL);
-
-        if (rol_node) {
-            // Since this is the last node, it should reference the end.
-            nt_node_set_data(rol_node, s, 0);
-            nt_node_to_node(rol_node, top_node);
-        }
-
-        nt_node_set_type(top_node, NT_TOP_ROL);
+    if (top_node->type & NT_TOP_NIL) {
+        // Top type remains ambiguous. Resolve it as nil.
+        nt_node_set_type(top_node, NT_TOP_NIL);
     }
 
     if (!nt_parser_allows_all(parser, top_node->type)) {
@@ -304,9 +299,16 @@ static const char *nt_parser_deserialize(
     };
 
     constexpr struct any_collection_type any_collection = {
-        .keys      = NT_KEY_MLS|NT_KEY_LST|NT_KEY_DCT|NT_KEY_ROL,
-        .setters   = NT_SET_MLS|NT_SET_LST|NT_SET_DCT|NT_SET_ROL,
-        .list_tags = NT_TAG_LST_MLS|NT_TAG_LST_LST|NT_TAG_LST_DCT|NT_TAG_LST_ROL
+        .keys = (
+            NT_KEY_MLS | NT_KEY_LST | NT_KEY_DCT | NT_KEY_ROL | NT_KEY_NIL
+        ),
+        .setters = (
+            NT_SET_MLS | NT_SET_LST | NT_SET_DCT | NT_SET_ROL | NT_SET_NIL
+        ),
+        .list_tags = (
+            NT_TAG_LST_MLS | NT_TAG_LST_LST | NT_TAG_LST_DCT |
+            NT_TAG_LST_ROL | NT_TAG_LST_NIL
+        )
     };
 
     size_t line_size;
@@ -528,20 +530,19 @@ static const char *nt_parser_deserialize(
 
         if (tag_sz == 2) {
             nest_type = NT_TAG_LST_ROL;
-            tag_node = nt_parser_create_node_type(parser, nest_type);
         }
         else {
             nest_type = any_collection.list_tags;
-
-            if (nt_parser_allows_any(parser, nest_type)) {
-                tag_node = nt_parser_create_node(parser);
-
-                if (tag_node) {
-                    nt_node_set_type(tag_node, nest_type);
-                }
-            }
-            else skip_nest = true;
         }
+
+        if (nt_parser_allows_any(parser, nest_type)) {
+            tag_node = nt_parser_create_node(parser);
+
+            if (tag_node) {
+                nt_node_set_type(tag_node, nest_type);
+            }
+        }
+        else skip_nest = true;
 
         if (tag_node) {
             nt_node_set_data(tag_node, tag, tag_sz);
@@ -558,39 +559,6 @@ static const char *nt_parser_deserialize(
                 );
 
                 nt_node_to_node(val_node, tag_node);
-            }
-
-            if (tag_node) {
-                nt_node_to_node(tag_node, parent);
-            }
-
-            if (newline_size) {
-                NT_NODE *newline = nt_parser_create_node_type(
-                    parser, NT_NEWLINE
-                );
-
-                if (newline) {
-                    nt_node_set_data(newline, end_of_line, newline_size);
-                    nt_node_to_node(newline, parent);
-                }
-            }
-
-            return next_line;
-        }
-        else {
-            // We reserve an empty rest-of-line string right after the
-            // ambiguous list tag for the case where no value is found from its
-            // nest. The list tag will then default to holding the value of this
-            // empty rest-of-line string.
-
-            NT_NODE *rol_node = nt_parser_create_node_type(parser, NT_STR_ROL);
-
-            if (rol_node) {
-                nt_node_set_data(
-                    rol_node, tag + tag_sz, line_size - (spaces + tag_sz)
-                );
-
-                nt_node_to_node(rol_node, tag_node);
             }
         }
 
@@ -654,20 +622,19 @@ static const char *nt_parser_deserialize(
 
         if (after_key_op && key_op[1] == ' ') {
             nest_type = NT_KEY_ROL;
-            key_node = nt_parser_create_node_type(parser, nest_type);
         }
         else {
             nest_type = any_collection.keys;
-
-            if (nt_parser_allows_any(parser, nest_type)) {
-                key_node = nt_parser_create_node(parser);
-
-                if (key_node) {
-                    nt_node_set_type(key_node, nest_type);
-                }
-            }
-            else skip_nest = true;
         }
+
+        if (nt_parser_allows_any(parser, nest_type)) {
+            key_node = nt_parser_create_node(parser);
+
+            if (key_node) {
+                nt_node_set_type(key_node, nest_type);
+            }
+        }
+        else skip_nest = true;
 
         if (key_node) {
             nt_node_set_data(
@@ -708,41 +675,6 @@ static const char *nt_parser_deserialize(
                 );
 
                 nt_node_to_node(val_node, key_node);
-            }
-
-            if (key_node) {
-                nt_node_reverse(key_node);
-                nt_node_to_node(key_node, parent);
-            }
-
-            if (newline_size) {
-                NT_NODE *newline = nt_parser_create_node_type(
-                    parser, NT_NEWLINE
-                );
-
-                if (newline) {
-                    nt_node_set_data(newline, end_of_line, newline_size);
-                    nt_node_to_node(newline, parent);
-                }
-            }
-
-            return next_line;
-        }
-        else {
-            // We reserve an empty rest-of-line string right after the
-            // ambiguous assignment operator for the case where no value is
-            // found from the nest. The key will then default to the empty
-            // rest-of-line string.
-
-            NT_NODE *rol_node = nt_parser_create_node_type(parser, NT_STR_ROL);
-
-            if (rol_node) {
-                nt_node_set_data(
-                    rol_node, after_key_op,
-                    line_size - nt_long_to_size(after_key_op - str)
-                );
-
-                nt_node_to_node(rol_node, key_node);
             }
         }
 
@@ -834,66 +766,9 @@ static const char *nt_parser_deserialize(
 
     nt_node_reverse(nest);
 
-    if (nest->type & (NT_KEY_ROL|NT_TAG_LST_ROL)) {
-        // If the nest type remains ambiguous, default to the storage of the
-        // empty rest-of-line placeholder string that must have been added
-        // earlier in the anticipation of this condition.
-
-        nt_node_set_type(nest, nest->type & (NT_KEY_ROL|NT_TAG_LST_ROL));
-    }
-    else {
-        // If the nest type was resolved during the deserialization of its
-        // children, then the placeholder rest-of-line string must be removed.
-        // However, since we should not leave any empty gaps in the output node
-        // array (parser->memory.nodes), we must shift everything after the ROL
-        // string back by one. After that, the tracked node count can simply be
-        // deduced by one.
-
-        NT_NODE *rol_node = nullptr;
-
-        for (NT_NODE *n = nest->children; n; n = n->next) {
-            if (n->type != NT_STR_ROL) {
-                continue;
-            }
-
-            rol_node = n;
-            break;
-        }
-
-        if (rol_node) {
-            nt_node_from_node(rol_node);
-
-            for (NT_NODE *n = rol_node; n < parser->nest.end; ++n) {
-                // This segment of code is highly optimized (read: dangerous).
-                // It assumes that outside this scope no pointers exist that
-                // point to nodes with addresses higher than or equal to the
-                // address of rol_node. If this assumption is wrong, then bad
-                // things will happen.
-
-                if (n + 1 == parser->nest.end) {
-                    parser->nest.end--;
-                    parser->node.count--;
-                    break;
-                }
-
-                *n = *(n + 1);
-
-                if (n->parent >= rol_node) {
-                    n->parent--;
-                }
-
-                if (n->prev) {
-                    if (n->prev >= rol_node) {
-                        n->prev--;
-                    }
-
-                    n->prev->next = n;
-                }
-                else {
-                    n->parent->children = n;
-                }
-            }
-        }
+    if (nest->type & (NT_KEY_NIL|NT_TAG_LST_NIL)) {
+        // If the nest type remains ambiguous, default to nil.
+        nt_node_set_type(nest, nest->type & (NT_KEY_NIL|NT_TAG_LST_NIL));
     }
 
     for (NT_NODE *child = nest->children; child; child = child->next) {
@@ -902,6 +777,10 @@ static const char *nt_parser_deserialize(
         }
 
         switch (nest->type) {
+            case NT_KEY_NIL: {
+                nt_node_set_type(child, NT_SET_NIL);
+                break;
+            }
             case NT_KEY_ROL: {
                 nt_node_set_type(child, NT_SET_ROL);
                 break;

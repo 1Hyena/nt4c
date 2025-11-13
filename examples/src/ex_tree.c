@@ -26,9 +26,9 @@ static void print_tree(NT_NODE *node, size_t depth) {
             infix   = "NONE";
             break;
         }
-        case NT_TOP_ROL: {
+        case NT_TOP_NIL: {
             prefix  = "\x1b[1;37m";
-            infix   = "TOP_ROL";
+            infix   = "TOP_NIL";
             break;
         }
         case NT_TOP_LST: {
@@ -86,6 +86,11 @@ static void print_tree(NT_NODE *node, size_t depth) {
             infix   = "TAG_LST_DCT";
             break;
         }
+        case NT_TAG_LST_NIL: {
+            prefix  = "\x1b[0;34m";
+            infix   = "TAG_LST_NIL";
+            break;
+        }
         case NT_KEY_ROL: {
             prefix  = "\x1b[1;34m";
             infix   = "KEY_ROL";
@@ -104,6 +109,11 @@ static void print_tree(NT_NODE *node, size_t depth) {
         case NT_KEY_DCT: {
             prefix  = "\x1b[1;34m";
             infix   = "KEY_DCT";
+            break;
+        }
+        case NT_KEY_NIL: {
+            prefix  = "\x1b[1;34m";
+            infix   = "KEY_NIL";
             break;
         }
         case NT_STR_ROL: {
@@ -144,6 +154,11 @@ static void print_tree(NT_NODE *node, size_t depth) {
             infix   = "SET_ROL";
             break;
         }
+        case NT_SET_NIL: {
+            prefix  = "\x1b[0;34m";
+            infix   = "SET_NIL";
+            break;
+        }
         case NT_TAG_MLS: {
             prefix  = "\x1b[0;34m";
             infix   = "TAG_MLS";
@@ -156,6 +171,7 @@ static void print_tree(NT_NODE *node, size_t depth) {
     if (node->data) {
         switch (node->type) {
             case NT_NONE:
+            case NT_KEY_NIL:
             case NT_KEY_MLS:
             case NT_KEY_DCT:
             case NT_KEY_LST:
@@ -184,9 +200,9 @@ int main(int, char **) {
     NT_NODE nodes[node_count];
     NT_PARSER parser = {};
 
-size_t i = node_count;
+//size_t i = node_count;
 
-    //for (size_t i=0; i< 146; ++i) {
+    for (size_t i=0; i< 200; ++i) {
         nt_parser_set_memory(&parser, nodes, i /*node_count*/);
 
         //nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE);
@@ -209,9 +225,9 @@ size_t i = node_count;
                 stderr, "[%3lu] sufficient memory for %lu nodes (result was %d)\n", i, parser.node.count, result
             );
 
-            //break;
+            break;
         }
-    //}
+    }
 
 
 
