@@ -82,8 +82,8 @@ buffer capacity.
 
 #### ex_hello ##################################################################
 
-The [ex_hello](examples/src/ex_hello.c) example shows how to make the NT4C
-parser produce the text `hello world` and print it on screen.
+The [ex_hello](examples/src/ex_hello.c) example demonstrates how to use the NT4C
+parser to generate the text "hello world" and display it on the screen.
 
 https://github.com/1Hyena/nt4c/blob/1ca39917030c2b80ed52266cd9dfa44f4e9c48ba/examples/src/ex_hello.c#L5-L15
 
