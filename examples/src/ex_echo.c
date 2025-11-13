@@ -23,7 +23,7 @@ int main(int, char **) {
     }
     const char *last_str = nullptr;
     for (NT_NODE *it = parser.nest.begin; it < parser.nest.end; ++it) {
-        printf("%.*s", (int) it->size, it->data);
+        printf(it->type == NT_NEWLINE ? "*%.*s" : "[%.*s]", (int) it->size, it->data);
 
         if (it->data < last_str) { // TODO: remove this block
             abort();

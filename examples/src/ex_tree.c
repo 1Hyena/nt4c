@@ -8,6 +8,10 @@ const char input_data[] = {
 };
 
 static void print_tree(NT_NODE *node, size_t depth) {
+    if (!node) {
+        return;
+    }
+
     for (size_t i=0; i<depth; ++i) {
         printf("%s", "    ");
     }
@@ -152,6 +156,7 @@ static void print_tree(NT_NODE *node, size_t depth) {
     if (node->data) {
         switch (node->type) {
             case NT_NONE:
+            case NT_KEY_MLS:
             case NT_KEY_DCT:
             case NT_KEY_LST:
             case NT_KEY_ROL: {
@@ -175,22 +180,38 @@ static void print_tree(NT_NODE *node, size_t depth) {
 }
 
 int main(int, char **) {
-    constexpr size_t node_count = 128;
+    constexpr size_t node_count = 200;
     NT_NODE nodes[node_count];
     NT_PARSER parser = {};
 
-    nt_parser_set_memory(&parser, nodes, node_count);
-    nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE);
+    for (size_t i=0; i< 146; ++i) {
+        nt_parser_set_memory(&parser, nodes, i /*node_count*/);
 
-    if (nt_parse(input_data, 0, &parser) > (int) node_count) {
-        fprintf(
-            stderr, "insufficient memory for %lu nodes\n", parser.node.count
-        );
+        //nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE);
 
-        return EXIT_FAILURE;
+        int result = nt_parse(input_data, 0, &parser);
+
+        if (result > (int) i /*node_count*/) {
+            fprintf(
+                stderr, "[%3lu] insufficient memory for %lu nodes (result was %d)\n", i, parser.node.count, result
+            );
+
+            //print_tree(parser.nest.root, 0);
+            //break;
+            //return EXIT_FAILURE;
+        }
+        else {
+            print_tree(parser.nest.root, 0);
+
+            fprintf(
+                stderr, "[%3lu] sufficient memory for %lu nodes (result was %d)\n", i, parser.node.count, result
+            );
+
+            break;
+        }
     }
 
-    print_tree(parser.nest.root, 0);
+
 
     return EXIT_SUCCESS;
 }

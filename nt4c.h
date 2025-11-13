@@ -240,6 +240,10 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
     }
 
     if (top_node->type == NT_TOP_MLS) {
+        NT_NODE *newline = nt_parser_create_node_type(
+            parser, NT_NEWLINE // Always increase the node count for estimation.
+        );
+
         for (NT_NODE *child = top_node->children; child; child = child->next) {
             if (child->type != NT_STR_MLN) {
                 continue;
@@ -252,8 +256,6 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
 
             const char *end_of_last_line = child->data + last_line_sz;
             size_t nlsz = child->size - last_line_sz;
-
-            NT_NODE *newline = nt_parser_create_node_type(parser, NT_NEWLINE);
 
             if (newline) {
                 nt_node_set_data(newline, end_of_last_line, nlsz);
@@ -274,7 +276,8 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
         NT_NODE *rol_node = nt_parser_create_node_type(parser, NT_STR_ROL);
 
         if (rol_node) {
-            nt_node_set_data(rol_node, str, 0);
+            // Since this is the last node, it should reference the end.
+            nt_node_set_data(rol_node, s, 0);
             nt_node_to_node(rol_node, top_node);
         }
 
@@ -546,19 +549,19 @@ static const char *nt_parser_deserialize(
         }
 
         if (tag_sz == 2) {
-            if (tag_node) {
-                NT_NODE *val_node = nt_parser_create_node_type(
-                    parser, NT_STR_ROL
+            NT_NODE *val_node = nt_parser_create_node_type(
+                parser, NT_STR_ROL
+            );
+
+            if (val_node) {
+                nt_node_set_data(
+                    val_node, tag + tag_sz, line_size - (spaces + tag_sz)
                 );
 
-                if (val_node) {
-                    nt_node_set_data(
-                        val_node, tag + tag_sz, line_size - (spaces + tag_sz)
-                    );
+                nt_node_to_node(val_node, tag_node);
+            }
 
-                    nt_node_to_node(val_node, tag_node);
-                }
-
+            if (tag_node) {
                 nt_node_to_node(tag_node, parent);
             }
 
@@ -603,7 +606,7 @@ static const char *nt_parser_deserialize(
             else if (parent->type & NT_TOP_DCT) {
                 nt_node_set_type(parent, NT_TOP_DCT);
             }
-            else if (parent->type != NT_TOP_DCT) {
+            else {
                 invalid = true;
             }
         }
@@ -657,7 +660,7 @@ static const char *nt_parser_deserialize(
             );
         }
 
-        if (after_key_op && key_node) {
+        if (after_key_op) {
             NT_NODE *op_node = nullptr;
 
             if (after_key_op && key_op[1] == ' ') {
@@ -681,20 +684,20 @@ static const char *nt_parser_deserialize(
         }
 
         if (after_key_op && key_op[1] == ' ') {
-            if (key_node) {
-                NT_NODE *val_node = nt_parser_create_node_type(
-                    parser, NT_STR_ROL
+            NT_NODE *val_node = nt_parser_create_node_type(
+                parser, NT_STR_ROL
+            );
+
+            if (val_node) {
+                nt_node_set_data(
+                    val_node, after_key_op,
+                    line_size - nt_long_to_size(after_key_op - str)
                 );
 
-                if (val_node) {
-                    nt_node_set_data(
-                        val_node, after_key_op,
-                        line_size - nt_long_to_size(after_key_op - str)
-                    );
+                nt_node_to_node(val_node, key_node);
+            }
 
-                    nt_node_to_node(val_node, key_node);
-                }
-
+            if (key_node) {
                 nt_node_reverse(key_node);
                 nt_node_to_node(key_node, parent);
             }
@@ -764,63 +767,39 @@ static const char *nt_parser_deserialize(
         s = next_line;
     }
 
-    // TODO: this block may be redundant, try commenting it out:
-    /*
-    switch (nest->type) {
-        case NT_TAG_LST_ROL:
-        case NT_TAG_LST_MLS:
-        case NT_TAG_LST_LST:
-        case NT_TAG_LST_DCT: {
-            if (parent->type == any_collection.keys) {
-                nt_node_set_type(parent, NT_KEY_LST);
+    if ((nest->type & (NT_KEY_MLS|NT_TAG_LST_MLS)) == nest->type) {
+        NT_NODE *newline = nt_parser_create_node_type(
+            parser, NT_NEWLINE // Always increase the node count for estimation.
+        );
+
+        for (NT_NODE *child = nest->children; child; child = child->next) {
+            if (child->type != NT_STR_MLN) {
+                continue;
             }
-            else if (parent->type == any_collection.list_tags) {
-                nt_node_set_type(parent, NT_TAG_LST_LST);
+
+            // The last multiline string must not have a newline in the end.
+
+            size_t last_line_sz;
+            nt_str_seg_first_line_size(child->data, child->size, &last_line_sz);
+
+            const char *end_of_last_line = child->data + last_line_sz;
+            size_t nlsz = child->size - last_line_sz;
+
+            if (newline) {
+                nt_node_set_data(newline, end_of_last_line, nlsz);
+                nt_node_to_node(newline, nest);
+                newline = nullptr;
             }
+
+            child->size = last_line_sz;
+            nt_node_set_type(child, NT_STR_ROL);
 
             break;
         }
-        case NT_KEY_ROL:
-        case NT_KEY_MLS:
-        case NT_KEY_LST:
-        case NT_KEY_DCT: {
-            if (parent->type == any_collection.keys) {
-                nt_node_set_type(parent, NT_KEY_DCT);
-            }
-            else if (parent->type == any_collection.list_tags) {
-                nt_node_set_type(parent, NT_TAG_LST_DCT);
-            }
-
-            break;
-        }
-        default: break;
-    }
-    */
-
-    for (NT_NODE *child = nest->children; child; child = child->next) {
-        if (child->type != NT_STR_MLN) {
-            continue;
-        }
-
-        // The last multiline string must not have a newline in the end.
-
-        size_t last_line_sz;
-        nt_str_seg_first_line_size(child->data, child->size, &last_line_sz);
-
-        const char *end_of_last_line = child->data + last_line_sz;
-        size_t nlsz = child->size - last_line_sz;
-
-        NT_NODE *newline = nt_parser_create_node_type(parser, NT_NEWLINE);
 
         if (newline) {
-            nt_node_set_data(newline, end_of_last_line, nlsz);
-            nt_node_to_node(newline, nest);
+            abort(); // MLS containers must always contain at least one string.
         }
-
-        child->size = last_line_sz;
-        nt_node_set_type(child, NT_STR_ROL);
-
-        break;
     }
 
     nt_node_reverse(nest);
@@ -845,6 +824,9 @@ static const char *nt_parser_deserialize(
                 nt_node_set_data(rol_node, n->data + n->size, 0);
                 nt_node_from_node(rol_node);
                 nt_node_to_after_node(rol_node, n);
+
+                // TODO: swap places so that positions in the memory would also
+                // be subsequent.
 
                 break;
             }
