@@ -1,0 +1,29 @@
+this:
+ is: an ugly 𝓪𝓼𝓼
+                                               # NestedText
+                                #document
+#and we are going
+to parse it:
+ - for the purpose
+                    # of
+making:
+                it:
+          appear:
+                        - more
+                       - easily
+               - readable
+       by:
+                                               > indenting
+        > the document
+                      > properly
+and:
+                                                       we:
+                        also:
+                                        added:
+                                            -color
+                                                # ... to
+
+highlight:
+                             - syntax
+                                                #
+                               # errors
