@@ -92,6 +92,10 @@ https://github.com/1Hyena/nt4c/blob/1ca39917030c2b80ed52266cd9dfa44f4e9c48ba/exa
 
 #### ex_pretty #################################################################
 
+The [ex_pretty](examples/src/ex_pretty.c) example demonstrates how to use the
+NT4C parser to prettyprint a NestedText document. It reformats the input text
+and adds syntax highlighting.
+
 https://github.com/1Hyena/nt4c/blob/b20cc895dc399e7b94e1d28a7a6367c5bedf5ab1/examples/ugly.nt#L1-L29
 
 ![screenshot](img/ex-pretty.png "console output of ex_pretty")
