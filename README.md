@@ -84,7 +84,7 @@ buffer capacity.
 
 This example shows how to make NT4C parser produce the output `hello world`.
 
-https://github.com/1Hyena/nt4c/blob/b20cc895dc399e7b94e1d28a7a6367c5bedf5ab1/examples/src/ex_hello.c#L5-L23
+https://github.com/1Hyena/nt4c/blob/1ca39917030c2b80ed52266cd9dfa44f4e9c48ba/examples/src/ex_hello.c#L5-L15
 
 ![screenshot](img/ex-hello.png "console output of ex_hello")
 
