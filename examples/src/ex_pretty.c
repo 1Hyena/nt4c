@@ -9,83 +9,46 @@ const unsigned char input_data[] = {
 };
 
 static int pretty_print(NT_NODE *node, size_t depth) {
+    constexpr NT_TYPE body_nodes = (
+        NT_STR_MLN | NT_SET_MLS | NT_SET_DCT | NT_SET_LST | NT_SET_ROL |
+        NT_SET_NIL | NT_STR_ROL | NT_STR_COM
+    );
+
+    constexpr NT_TYPE navy_nodes = (
+        NT_TAG_LST_ROL  | NT_SET_MLS |
+        NT_TAG_LST_DCT  | NT_SET_NIL |
+        NT_TAG_LST_LST  | NT_SET_DCT |
+        NT_TAG_LST_MLS  | NT_SET_LST |
+        NT_TAG_MLS      | NT_SET_ROL
+    );
+
+    constexpr NT_TYPE blue_nodes = (
+        NT_KEY_NIL | NT_KEY_MLS | NT_KEY_LST | NT_KEY_DCT | NT_KEY_ROL
+    );
+
+    constexpr NT_TYPE olive_nodes = NT_TAG_COM | NT_STR_COM;
+
+    constexpr NT_TYPE no_newline = (
+        NT_TAG_COM | NT_TAG_MLS | NT_TAG_LST_ROL | NT_KEY_NIL | NT_KEY_MLS |
+        NT_KEY_LST | NT_KEY_DCT | NT_KEY_ROL     | NT_SET_ROL | NT_STR_MLN
+    );
+
     if (node->data) {
-        switch (node->type) {
-            case NT_STR_MLN:
-            case NT_SET_MLS:
-            case NT_SET_DCT:
-            case NT_SET_LST:
-            case NT_SET_ROL:
-            case NT_SET_NIL:
-            case NT_STR_ROL:
-            case NT_STR_COM: {
-                break;
-            }
-            default: {
-                for (size_t i=0; i<depth; ++i) {
-                    printf("%s", "    ");
-                }
-
-                break;
+        if ((node->type & body_nodes) == false) {
+            for (size_t i=0; i<depth; ++i) {
+                printf("%s", "    ");
             }
         }
 
-        const char *prefix = "";
-        const char *suffix = "\x1b[0m\n";
+        const char *prefix = (
+            (node->type & navy_nodes    ) ? "\x1b[0;34m" :
+            (node->type & blue_nodes    ) ? "\x1b[1;34m" :
+            (node->type & olive_nodes   ) ? "\x1b[0;33m" :
+            (node->type & NT_NONE       ) ? "\x1b[7;37m" :
+            (node->type & NT_INVALID    ) ? "\x1b[7;31m" : ""
+        );
 
-        switch (node->type) {
-            case NT_NONE: {
-                prefix = "\x1b[7;37m";
-                break;
-            }
-            case NT_INVALID: {
-                prefix = "\x1b[7;31m";
-                break;
-            }
-            case NT_TAG_COM: {
-                prefix = "\x1b[33m";
-                suffix = "";
-                break;
-            }
-            case NT_TAG_LST_DCT:
-            case NT_TAG_LST_LST:
-            case NT_TAG_LST_MLS: {
-                prefix = "\x1b[0;34m";
-                break;
-            }
-            case NT_TAG_MLS:
-            case NT_TAG_LST_ROL: {
-                prefix = "\x1b[0;34m";
-                suffix = "\x1b[0m";
-                break;
-            }
-            case NT_KEY_NIL:
-            case NT_KEY_MLS:
-            case NT_KEY_LST:
-            case NT_KEY_DCT:
-            case NT_KEY_ROL: {
-                prefix = "\x1b[1;34m";
-                suffix = "\x1b[0m";
-                break;
-            }
-            case NT_SET_NIL:
-            case NT_SET_MLS:
-            case NT_SET_DCT:
-            case NT_SET_LST: {
-                prefix = "\x1b[0;34m";
-                break;
-            }
-            case NT_SET_ROL: {
-                prefix = "\x1b[0;34m";
-                suffix = "\x1b[0m";
-                break;
-            }
-            case NT_STR_MLN: {
-                suffix = "";
-                break;
-            }
-            default: break;
-        }
+        const char *suffix = node->type & no_newline ? "\x1b[0m" : "\x1b[0m\n";
 
         printf("%s%.*s%s", prefix, (int) node->size, node->data, suffix);
         ++depth;
