@@ -109,10 +109,12 @@ https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/exa
 pretty-print a NestedText document. It reformats the input text and adds syntax
 highlighting.
 
+https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_pretty.c#L65-L74
+
 Here is a NestedText document before and after pretty-printing, as shown in the
 screenshot below:
 
-https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_pretty.c#L65-L74
+https://github.com/1Hyena/nt4c/blob/2c24be5802d1af9dd911616434e4df967f1bff57/examples/ugly.nt#L1-L29
 
 ![screenshot](img/ex_pretty.png "console output of ex_pretty")
 
