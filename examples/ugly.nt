@@ -1,29 +1,29 @@
-this:
- is: an ugly 𝓪𝓼𝓼
+this                                                     :
+ is                 : an ugly 𝓪𝓼𝓼
                                                # NestedText
                                 #document
 #and we are going
-to parse it:
+to parse it                                          :
  - for the purpose
                     # of
-making:
-                it:
-          appear:
+making                                        :
+                it                 :
+          appear                                      :
                         - more
                        - easily
                - readable
-       by:
+       by                             :
                                                > indenting
         > the document
                       > properly
-and:
+and           :
                                                        we:
-                        also:
-                                        added:
+                        also              :
+                                        added            :
                                             -color
                                                 # ... to
 
-highlight:
+highlight                        :
                              - syntax
                                                 #
                                # errors
