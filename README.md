@@ -88,7 +88,7 @@ parser to generate the text "hello world" and display it on the screen.
 
 https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_hello.c#L5-L15
 
-![screenshot](img/ex-hello.png "console output of ex_hello")
+![screenshot](img/ex_hello.png "console output of ex_hello")
 
 
 #### ex_echo ###################################################################
@@ -100,7 +100,7 @@ array is initialized for storing the DOM.
 
 https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_echo.c#L10-L34
 
-![screenshot](img/ex-echo.png "console output of ex_echo")
+![screenshot](img/ex_echo.png "console output of ex_echo")
 
 
 #### ex_pretty #################################################################
@@ -114,7 +114,7 @@ screenshot below:
 
 https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_pretty.c#L65-L74
 
-![screenshot](img/ex-pretty.png "console output of ex_pretty")
+![screenshot](img/ex_pretty.png "console output of ex_pretty")
 
 
 #### ex_tree ###################################################################
@@ -126,7 +126,7 @@ https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/exa
 
 Here is a screenshot showing the structure of the parsed NestedText document:
 
-![screenshot](img/ex-tree.png "console output of ex_tree")
+![screenshot](img/ex_tree.png "console output of ex_tree")
 
 
 # License ######################################################################
