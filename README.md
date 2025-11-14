@@ -54,29 +54,30 @@ standard of the C programming language. It includes the following features:
 
 ### Parsing NestedText #########################################################
 
-To parse a NestedText document, include `nt4c.h` directly in your codebase as
-the parser is implemented in a single C header file.
+To parse a NestedText document, you can include the [nt4c.h](nt4c.h) header file
+directly in your codebase. The parser is implemented in a single C header file
+for easy integration.
 
-The main function provided is `nt_parse()`, which takes a text in NestedText
-syntax and a pointer to the `NT_PARSER` structure for fine-tuning the
+The main function to use is `nt_parse()`, which takes a text in NestedText
+syntax and a pointer to the `NT_PARSER` structure for customizing the
 deserialization process.
 
-The parser structure stores parsing configuration and the parsing process state.
-By default, it can hold up to `NT_PARSER_NCOUNT` nodes in its internal memory,
-but `nt_parser_set_memory` function allows using an arbitrary array of `NT_NODE`
-structures.
+The `NT_PARSER` structure stores parsing configuration and the parsing process
+state. By default, it can handle up to `NT_PARSER_NCOUNT` nodes in its internal
+memory. However, you can use the `nt_parser_set_memory` function to work with a
+custom array of `NT_NODE` structures.
 
-During `nt_parse()` execution, the deserialization graph of the document is
-populated with nodes. The parser continues processing even if the output buffer
-becomes full.
+When you call `nt_parse()`, the parser populates the deserialization graph of
+the document with nodes. It continues processing even if the output buffer
+reaches its capacity.
 
-Upon successful parsing, `nt_parse()` returns the number of nodes in the input
-text, which can help determine the memory needed for storing the deserialization
-graph. On failure, the function returns a negative number.
+After a successful parsing operation, `nt_parse()` returns the number of nodes
+in the input text. This information can help you determine the memory required
+for storing the deserialization graph. If parsing fails, the function returns a
+negative value.
 
-The deserialization graph is considered fully stored only when the value
-returned by `nt_parse()` is non-negative and less than or equal to the output
-buffer capacity.
+The deserialization graph is considered fully stored when the value returned by
+`nt_parse()` is non-negative and does not exceed the output buffer's capacity.
 
 
 ### Examples ###################################################################
