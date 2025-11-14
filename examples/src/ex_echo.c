@@ -18,12 +18,10 @@ int main(int, char **) {
     NT_NODE nodes[node_count];
     NT_PARSER parser = {};
 
-    nt_parser_set_memory(&parser, nodes, (size_t) node_count);
+    nt_parser_set_memory(&parser, nodes, sizeof(nodes)/sizeof(nodes[0]));
 
     if (nt_parse(input_data, sizeof(input_data), &parser) > (int) node_count) {
-        fprintf(
-            stderr, "insufficient memory for %lu nodes\n", parser.doc.length
-        );
+        fprintf(stderr, "not enough memory for %lu nodes\n", parser.doc.length);
 
         return EXIT_FAILURE;
     }
