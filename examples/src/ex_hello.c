@@ -9,7 +9,7 @@ int main(int, char **) {
         return EXIT_FAILURE;
     }
 
-    printf("%.*s\n", (int) parser.nest.begin->size, parser.nest.begin->data);
+    printf("%.*s\n", (int) parser.doc.begin->size, parser.doc.begin->data);
 
     return EXIT_SUCCESS;
 }

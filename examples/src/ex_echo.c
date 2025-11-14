@@ -22,13 +22,13 @@ int main(int, char **) {
 
     if (nt_parse(input_data, sizeof(input_data), &parser) > (int) node_count) {
         fprintf(
-            stderr, "insufficient memory for %lu nodes\n", parser.node.count
+            stderr, "insufficient memory for %lu nodes\n", parser.doc.length
         );
 
         return EXIT_FAILURE;
     }
 
-    for (NT_NODE *it = parser.nest.begin; it < parser.nest.end; ++it) {
+    for (NT_NODE *it = parser.doc.begin; it < parser.doc.end; ++it) {
         printf("%.*s", (int) it->size, it->data);
     }
 

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+#define NT_PARSER_NCOUNT 64 // The ugly.nt document does not exceed this length.
 #include "../../nt4c.h"
 #include <stdlib.h>
 
@@ -7,7 +8,7 @@ const unsigned char input_data[] = {
     , '\0'
 };
 
-static void pretty_print(NT_NODE *node, size_t depth) {
+static int pretty_print(NT_NODE *node, size_t depth) {
     if (node->data) {
         switch (node->type) {
             case NT_STR_MLN:
@@ -93,25 +94,17 @@ static void pretty_print(NT_NODE *node, size_t depth) {
     for (NT_NODE *child = node->children; child; child = child->next) {
         pretty_print(child, depth);
     }
+
+    return EXIT_SUCCESS;
 }
 
 int main(int, char **) {
-    constexpr size_t node_count = 128;
-    NT_NODE nodes[node_count];
-    NT_PARSER parser = {};
+    NT_PARSER parser = { .settings = { .blacklist = NT_SPACE|NT_NEWLINE } };
 
-    nt_parser_set_memory(&parser, nodes, node_count);
-    nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE);
-
-    if (nt_parse((const char *) input_data, 0, &parser) > (int) node_count) {
-        fprintf(
-            stderr, "insufficient memory for %lu nodes\n", parser.node.count
-        );
-
+    if (nt_parse((char *) input_data, 0, &parser) > (int) parser.mem.capacity) {
+        fprintf(stderr, "not enough memory for %lu nodes\n", parser.doc.length);
         return EXIT_FAILURE;
     }
 
-    pretty_print(parser.nest.root, 0);
-
-    return EXIT_SUCCESS;
+    return pretty_print(parser.doc.root, 0);
 }

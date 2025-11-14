@@ -200,36 +200,17 @@ int main(int, char **) {
     NT_NODE nodes[node_count];
     NT_PARSER parser = {};
 
-//size_t i = node_count;
+    nt_parser_set_memory(&parser, nodes, node_count);
 
-    for (size_t i=0; i< 200; ++i) {
-        nt_parser_set_memory(&parser, nodes, i /*node_count*/);
+    int result = nt_parse(input_data, sizeof(input_data), &parser);
 
-        //nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE);
+    if (result > (int) node_count) {
+        fprintf(stderr, "not enough memory for %lu nodes\n", parser.doc.length);
 
-        int result = nt_parse(input_data, 0, &parser);
-
-        if (result > (int) i /*node_count*/) {
-            fprintf(
-                stderr, "[%3lu] insufficient memory for %lu nodes (result was %d)\n", i, parser.node.count, result
-            );
-
-            //print_tree(parser.nest.root, 0);
-            //break;
-            //return EXIT_FAILURE;
-        }
-        else {
-            print_tree(parser.nest.root, 0);
-
-            fprintf(
-                stderr, "[%3lu] sufficient memory for %lu nodes (result was %d)\n", i, parser.node.count, result
-            );
-
-            break;
-        }
+        return EXIT_FAILURE;
     }
 
-
+    print_tree(parser.doc.root, 0);
 
     return EXIT_SUCCESS;
 }

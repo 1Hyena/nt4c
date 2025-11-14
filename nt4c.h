@@ -91,24 +91,23 @@ typedef struct NT_NODE {
 } NT_NODE;
 
 typedef struct NT_PARSER {
-    size_t depth; // Maximum nesting depth of the structure being decoded.
-
     struct {
-        size_t      count;
-        NT_TYPE     blacklist;
-    } node;
+        size_t      depth;      // Maximum allowed nesting depth.
+        NT_TYPE     blacklist;  // Node types to exclude from the document.
+    } settings;
 
     struct {
         NT_NODE *   root;
         NT_NODE *   begin;
         NT_NODE *   end;
-    } nest;
+        size_t      length;
+    } doc;
 
     struct {
         NT_NODE     integrated[NT_PARSER_NCOUNT];
         NT_NODE *   nodes;
         size_t      capacity;
-    } memory;
+    } mem;
 
     struct {
         bool debug:1;
@@ -148,15 +147,15 @@ static void         nt4c_print_log(char *fmt, ...);
 static inline void nt_parser_set_memory(
     NT_PARSER *parser, NT_NODE *nodes, size_t count
 ) {
-    parser->memory.nodes = nodes;
-    parser->memory.capacity = count;
+    parser->mem.nodes = nodes;
+    parser->mem.capacity = count;
     parser->bitset.nomem = !count;
 }
 
 static inline void nt_parser_set_blacklist(
     NT_PARSER *parser, NT_TYPE blacklist
 ) {
-    parser->node.blacklist = blacklist;
+    parser->settings.blacklist = blacklist;
 }
 
 static inline void nt_parser_set_whitelist(
@@ -166,7 +165,7 @@ static inline void nt_parser_set_whitelist(
 }
 
 static inline void nt_parser_set_recursion(NT_PARSER *parser, size_t depth) {
-    parser->depth = depth;
+    parser->settings.depth = depth;
 }
 
 static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
@@ -180,31 +179,31 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
         parser = &default_parser;
     }
     else {
-        if (parser->memory.capacity == 0
-        &&  parser->memory.nodes == nullptr
+        if (parser->mem.capacity == 0
+        &&  parser->mem.nodes == nullptr
         &&  parser->bitset.nomem == false) {
             // Parser's memory seems to be in the default state. In this case we
             // use the integrated memory.
 
             nt_parser_set_memory(
-                parser, parser->memory.integrated, (
-                    sizeof(parser->memory.integrated) /
-                    sizeof(parser->memory.integrated[0])
+                parser, parser->mem.integrated, (
+                    sizeof(parser->mem.integrated) /
+                    sizeof(parser->mem.integrated[0])
                 )
             );
         }
 
-        parser->node.count  = 0;
-        parser->nest.begin  = nullptr;
-        parser->nest.end    = nullptr;
-        parser->nest.root   = nullptr;
+        parser->doc.length  = 0;
+        parser->doc.begin  = nullptr;
+        parser->doc.end    = nullptr;
+        parser->doc.root   = nullptr;
     }
 
     NT_NODE tmp_node = {};
     NT_NODE *top_node = nt4c_parser_create_node(parser);
 
     if (top_node) {
-        parser->nest.root = top_node;
+        parser->doc.root = top_node;
     }
     else {
         top_node = &tmp_node;
@@ -269,21 +268,21 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
     }
 
     if (!nt4c_parser_allows_all(parser, top_node->type)) {
-        parser->node.count  = 0;
-        parser->nest.begin  = nullptr;
-        parser->nest.end    = nullptr;
-        parser->nest.root   = nullptr;
+        parser->doc.length  = 0;
+        parser->doc.begin  = nullptr;
+        parser->doc.end    = nullptr;
+        parser->doc.root   = nullptr;
     }
 
-    return nt4c_size_to_int(parser->node.count);
+    return nt4c_size_to_int(parser->doc.length);
 }
 
 static inline bool nt4c_parser_allows_all(NT_PARSER *parser, NT_TYPE types) {
-    return !(types & parser->node.blacklist);
+    return !(types & parser->settings.blacklist);
 }
 
 static inline bool nt4c_parser_allows_any(NT_PARSER *parser, NT_TYPE types) {
-    return !((types & parser->node.blacklist) == types);
+    return !((types & parser->settings.blacklist) == types);
 }
 
 static const char *nt4c_parser_deserialize(
@@ -354,7 +353,7 @@ static const char *nt4c_parser_deserialize(
         nt4c_print_log("%.*s\n", nt4c_size_to_int(line_size), str);
     }
 
-    if (depth == parser->depth) {
+    if (depth == parser->settings.depth) {
         NT_NODE *node = nt4c_parser_create_node_type(parser, NT_DEEP);
 
         if (node) {
@@ -473,7 +472,7 @@ static const char *nt4c_parser_deserialize(
     bool skip_nest = false;
     NT_NODE *nest = nullptr;
     NT_TYPE nest_type = NT_NONE;
-    size_t old_node_count = parser->node.count;
+    size_t old_node_count = parser->doc.length;
 
     if (*after_spaces == '-') {
         const char *tag = after_spaces;
@@ -809,8 +808,8 @@ static const char *nt4c_parser_deserialize(
         // Therefore, the nest and its children must not add to the total node
         // count.
 
-        parser->node.count = old_node_count;
-        parser->nest.end = &parser->memory.nodes[parser->node.count];
+        parser->doc.length = old_node_count;
+        parser->doc.end = &parser->mem.nodes[parser->doc.length];
     }
     else if (nest == &tmp_node) {
         if (nest->children) {
@@ -851,19 +850,19 @@ static NT_NODE *nt4c_parser_create_node(NT_PARSER *parser) {
     static NT_NODE zero_node;
     NT_NODE *node = nullptr;
 
-    if (parser->node.count < parser->memory.capacity) {
-        node = &parser->memory.nodes[parser->node.count];
+    if (parser->doc.length < parser->mem.capacity) {
+        node = &parser->mem.nodes[parser->doc.length];
         *node = zero_node;
     }
 
-    parser->node.count++;
+    parser->doc.length++;
 
-    if (node && parser->nest.root) {
-        if (parser->nest.begin == nullptr) {
-            parser->nest.begin = node;
+    if (node && parser->doc.root) {
+        if (parser->doc.begin == nullptr) {
+            parser->doc.begin = node;
         }
 
-        parser->nest.end = node + 1;
+        parser->doc.end = node + 1;
     }
 
     return node;
