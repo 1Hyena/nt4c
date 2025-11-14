@@ -2,7 +2,7 @@
 #include "../../nt4c.h"
 #include <stdlib.h>
 
-const char input_data[] = {
+const unsigned char input_data[] = {
 #embed "../repository.nt" if_empty('M', 'i', 's', 's', 'i', 'n', 'g', '\n')
     , '\0'
 };
@@ -16,174 +16,55 @@ static void print_tree(NT_NODE *node, size_t depth) {
         printf("%s", "    ");
     }
 
-    const char *prefix = "";
-    const char *infix  = "???";
+    constexpr NT_TYPE navy_nodes = (
+        NT_TAG_LST_ROL  | NT_SET_MLS |
+        NT_TAG_LST_DCT  | NT_SET_NIL |
+        NT_TAG_LST_LST  | NT_SET_DCT |
+        NT_TAG_LST_MLS  | NT_SET_LST |
+        NT_TAG_LST_NIL  | NT_SET_ROL |
+        NT_TAG_MLS
+    );
+
+    constexpr NT_TYPE blue_nodes = (
+        NT_KEY_NIL | NT_KEY_MLS | NT_KEY_LST | NT_KEY_DCT | NT_KEY_ROL
+    );
+
+    constexpr NT_TYPE green_nodes = NT_STR_ROL | NT_STR_MLN;
+    constexpr NT_TYPE gray_nodes  = NT_SPACE   | NT_NEWLINE;
+    constexpr NT_TYPE olive_nodes = NT_TAG_COM | NT_STR_COM;
+
+    const char *prefix = (
+        (node->type & navy_nodes    ) ? "\x1b[0;34m" :
+        (node->type & blue_nodes    ) ? "\x1b[1;34m" :
+        (node->type & olive_nodes   ) ? "\x1b[0;33m" :
+        (node->type & green_nodes   ) ? "\x1b[0;32m" :
+        (node->type & gray_nodes    ) ? "\x1b[1;30m" :
+        (node->type & NT_NONE       ) ? "\x1b[7;37m" :
+        (node->type & NT_INVALID    ) ? "\x1b[7;31m" : ""
+    );
+
     const char *suffix = "\x1b[0m";
 
-    switch (node->type) {
-        case NT_NONE: {
-            prefix  = "\x1b[7;37m";
-            infix   = "NONE";
-            break;
-        }
-        case NT_TOP_NIL: {
-            prefix  = "\x1b[1;37m";
-            infix   = "TOP_NIL";
-            break;
-        }
-        case NT_TOP_LST: {
-            prefix  = "\x1b[1;37m";
-            infix   = "TOP_LST";
-            break;
-        }
-        case NT_TOP_MLS: {
-            prefix  = "\x1b[1;37m";
-            infix   = "TOP_MLS";
-            break;
-        }
-        case NT_TOP_DCT: {
-            prefix  = "\x1b[1;37m";
-            infix   = "TOP_DCT";
-            break;
-        }
-        case NT_INVALID: {
-            prefix  = "\x1b[7;1;31m";
-            infix   = "INVALID";
-            break;
-        }
-        case NT_DEEP: {
-            prefix  = "\x1b[7;1;33m";
-            infix   = "DEEP";
-            break;
-        }
-        case NT_TAG_COM: {
-            prefix  = "\x1b[33m";
-            infix   = "TAG_COM";
-            break;
-        }
-        case NT_STR_COM: {
-            prefix  = "\x1b[33m";
-            infix   = "STR_COM";
-            break;
-        }
-        case NT_TAG_LST_ROL: {
-            prefix  = "\x1b[0;34m";
-            infix   = "TAG_LST_ROL";
-            break;
-        }
-        case NT_TAG_LST_MLS: {
-            prefix  = "\x1b[0;34m";
-            infix   = "TAG_LST_MLS";
-            break;
-        }
-        case NT_TAG_LST_LST: {
-            prefix  = "\x1b[0;34m";
-            infix   = "TAG_LST_LST";
-            break;
-        }
-        case NT_TAG_LST_DCT: {
-            prefix  = "\x1b[0;34m";
-            infix   = "TAG_LST_DCT";
-            break;
-        }
-        case NT_TAG_LST_NIL: {
-            prefix  = "\x1b[0;34m";
-            infix   = "TAG_LST_NIL";
-            break;
-        }
-        case NT_KEY_ROL: {
-            prefix  = "\x1b[1;34m";
-            infix   = "KEY_ROL";
-            break;
-        }
-        case NT_KEY_MLS: {
-            prefix  = "\x1b[1;34m";
-            infix   = "KEY_MLS";
-            break;
-        }
-        case NT_KEY_LST: {
-            prefix  = "\x1b[1;34m";
-            infix   = "KEY_LST";
-            break;
-        }
-        case NT_KEY_DCT: {
-            prefix  = "\x1b[1;34m";
-            infix   = "KEY_DCT";
-            break;
-        }
-        case NT_KEY_NIL: {
-            prefix  = "\x1b[1;34m";
-            infix   = "KEY_NIL";
-            break;
-        }
-        case NT_STR_ROL: {
-            infix   = "STR_ROL";
-            break;
-        }
-        case NT_STR_MLN: {
-            infix   = "STR_MLN";
-            break;
-        }
-        case NT_NEWLINE: {
-            prefix  = "\x1b[1;30m";
-            infix   = "NEWLINE";
-            break;
-        }
-        case NT_SPACE: {
-            prefix  = "\x1b[1;30m";
-            infix   = "SPACE";
-            break;
-        }
-        case NT_SET_MLS: {
-            prefix  = "\x1b[0;34m";
-            infix   = "SET_MLS";
-            break;
-        }
-        case NT_SET_DCT: {
-            prefix  = "\x1b[0;34m";
-            infix   = "SET_DCT";
-            break;
-        }
-        case NT_SET_LST: {
-            prefix  = "\x1b[0;34m";
-            infix   = "SET_LST";
-            break;
-        }
-        case NT_SET_ROL: {
-            prefix  = "\x1b[0;34m";
-            infix   = "SET_ROL";
-            break;
-        }
-        case NT_SET_NIL: {
-            prefix  = "\x1b[0;34m";
-            infix   = "SET_NIL";
-            break;
-        }
-        case NT_TAG_MLS: {
-            prefix  = "\x1b[0;34m";
-            infix   = "TAG_MLS";
-            break;
-        }
-    }
-
-    printf("%s%s%s", prefix, infix, suffix);
+    printf("%s%s%s", prefix, nt_code(node->type), suffix);
 
     if (node->data) {
-        switch (node->type) {
-            case NT_NONE:
-            case NT_KEY_NIL:
-            case NT_KEY_MLS:
-            case NT_KEY_DCT:
-            case NT_KEY_LST:
-            case NT_KEY_ROL: {
-                printf(" (%.*s)", (int) node->size, node->data);
-                break;
+        if (node->type == NT_SPACE) {
+            printf("\x1b[0;1;30;3m, length %lu\x1b[0m", node->size);
+        }
+        else {
+            size_t line_size;
+            nt4c_str_line_size(node->data, node->size, &line_size);
+
+            if (line_size) {
+                printf("%s", "\x1b[1;30m:\x1b[0;3m ");
+
+                if (line_size < 10) {
+                    printf("%.*s\x1b[0m", (int) line_size, node->data);
+                }
+                else {
+                    printf("%.*s%s\x1b[0m", 10, node->data, "\x1b[1;30m...");
+                }
             }
-            case NT_SPACE: {
-                printf(" (%lu)", node->size);
-                break;
-            }
-            default: break;
         }
     }
 
@@ -202,7 +83,7 @@ int main(int, char **) {
 
     nt_parser_set_memory(&parser, nodes, node_count);
 
-    int result = nt_parse(input_data, sizeof(input_data), &parser);
+    int result = nt_parse((char *) input_data, sizeof(input_data), &parser);
 
     if (result > (int) node_count) {
         fprintf(stderr, "not enough memory for %lu nodes\n", parser.doc.length);

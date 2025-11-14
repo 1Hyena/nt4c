@@ -73,11 +73,12 @@ typedef enum : uint32_t {
 } NT_TYPE;
 
 // Public API: /////////////////////////////////////////////////////////////////
-static int      nt_parse(const char *text, size_t text_size, NT_PARSER *);
-static void     nt_parser_set_memory(NT_PARSER *, NT_NODE *nodes, size_t count);
-static void     nt_parser_set_recursion(NT_PARSER *, size_t depth);
-static void     nt_parser_set_blacklist(NT_PARSER *, NT_TYPE blacklist);
-static void     nt_parser_set_whitelist(NT_PARSER *, NT_TYPE whitelist);
+static int          nt_parse(const char *text, size_t text_size, NT_PARSER *);
+static void         nt_parser_set_memory(NT_PARSER *, NT_NODE *, size_t ncount);
+static void         nt_parser_set_recursion(NT_PARSER *, size_t depth);
+static void         nt_parser_set_blacklist(NT_PARSER *, NT_TYPE blacklist);
+static void         nt_parser_set_whitelist(NT_PARSER *, NT_TYPE whitelist);
+static const char * nt_code(NT_TYPE);
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef struct NT_NODE {
@@ -166,6 +167,42 @@ static inline void nt_parser_set_whitelist(
 
 static inline void nt_parser_set_recursion(NT_PARSER *parser, size_t depth) {
     parser->settings.depth = depth;
+}
+
+static inline const char *nt_code(NT_TYPE type) {
+    switch (type) {
+        case NT_NONE:           return "NONE";
+        case NT_TOP_NIL:        return "TOP_NIL";
+        case NT_TOP_LST:        return "TOP_LST";
+        case NT_TOP_MLS:        return "TOP_MLS";
+        case NT_TOP_DCT:        return "TOP_DCT";
+        case NT_INVALID:        return "INVALID";
+        case NT_DEEP:           return "DEEP";
+        case NT_TAG_COM:        return "TAG_COM";
+        case NT_STR_COM:        return "STR_COM";
+        case NT_TAG_LST_ROL:    return "TAG_LST_ROL";
+        case NT_TAG_LST_MLS:    return "TAG_LST_MLS";
+        case NT_TAG_LST_LST:    return "TAG_LST_LST";
+        case NT_TAG_LST_DCT:    return "TAG_LST_DCT";
+        case NT_TAG_LST_NIL:    return "TAG_LST_NIL";
+        case NT_KEY_ROL:        return "KEY_ROL";
+        case NT_KEY_MLS:        return "KEY_MLS";
+        case NT_KEY_LST:        return "KEY_LST";
+        case NT_KEY_DCT:        return "KEY_DCT";
+        case NT_KEY_NIL:        return "KEY_NIL";
+        case NT_STR_ROL:        return "STR_ROL";
+        case NT_STR_MLN:        return "STR_MLN";
+        case NT_NEWLINE:        return "NEWLINE";
+        case NT_SPACE:          return "SPACE";
+        case NT_SET_MLS:        return "SET_MLS";
+        case NT_SET_DCT:        return "SET_DCT";
+        case NT_SET_LST:        return "SET_LST";
+        case NT_SET_ROL:        return "SET_ROL";
+        case NT_SET_NIL:        return "SET_NIL";
+        case NT_TAG_MLS:        return "TAG_MLS";
+    }
+
+    return "???";
 }
 
 static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {

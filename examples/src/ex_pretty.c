@@ -19,7 +19,8 @@ static int pretty_print(NT_NODE *node, size_t depth) {
         NT_TAG_LST_DCT  | NT_SET_NIL |
         NT_TAG_LST_LST  | NT_SET_DCT |
         NT_TAG_LST_MLS  | NT_SET_LST |
-        NT_TAG_MLS      | NT_SET_ROL
+        NT_TAG_LST_NIL  | NT_SET_ROL |
+        NT_TAG_MLS
     );
 
     constexpr NT_TYPE blue_nodes = (
