@@ -93,10 +93,11 @@ https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/exa
 
 #### ex_echo ###################################################################
 
-[This example](examples/src/ex_echo.c) shows how to use the NT4C parser to parse
-and print a NestedText document on the screen. The input document is parsed
-twice. First, the length of the document is determined. Then, a variable-length
-array is initialized for storing the DOM.
+[This example](examples/src/ex_echo.c) demonstrates how to utilize the NT4C
+parser to parse and display a NestedText document on the screen. The input
+document undergoes parsing twice. Initially, the length of the document is
+calculated. Subsequently, a variable-length array is set up to store the
+Document Object Model (DOM).
 
 https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_echo.c#L10-L34
 
