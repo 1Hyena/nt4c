@@ -32,6 +32,11 @@
 #include <stdarg.h>
 #include <stdint.h>
 
+#define NT4C_MAJOR_VERSION  1
+#define NT4C_MINOR_VERSION  0
+#define NT4C_REVISION       0
+#define NT4C_VERSION        "1.0.0"
+
 #ifndef NT_PARSER_NCOUNT
 #define NT_PARSER_NCOUNT 8
 #endif
