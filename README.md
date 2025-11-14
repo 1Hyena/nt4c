@@ -86,9 +86,21 @@ buffer capacity.
 The [ex_hello](examples/src/ex_hello.c) example demonstrates how to use the NT4C
 parser to generate the text "hello world" and display it on the screen.
 
-https://github.com/1Hyena/nt4c/blob/1ca39917030c2b80ed52266cd9dfa44f4e9c48ba/examples/src/ex_hello.c#L5-L15
+https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_hello.c#L5-L15
 
 ![screenshot](img/ex-hello.png "console output of ex_hello")
+
+
+#### ex_echo ###################################################################
+
+[This example](examples/src/ex_echo.c) shows how to use the NT4C parser to parse
+and print a NestedText document on the screen. The input document is parsed
+twice. First, the length of the document is determined. Then, a variable-length
+array is initialized for storing the DOM.
+
+https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_echo.c#L10-L34
+
+![screenshot](img/ex-echo.png "console output of ex_echo")
 
 
 #### ex_pretty #################################################################
@@ -100,9 +112,21 @@ highlighting.
 Here is a NestedText document before and after pretty-printing, as shown in the
 screenshot below:
 
-https://github.com/1Hyena/nt4c/blob/b20cc895dc399e7b94e1d28a7a6367c5bedf5ab1/examples/ugly.nt#L1-L29
+https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_pretty.c#L65-L74
 
 ![screenshot](img/ex-pretty.png "console output of ex_pretty")
+
+
+#### ex_tree ###################################################################
+
+[This example](examples/src/ex_tree.c) shows how to use the NT4C parser to print
+the structure of a NestedText document on the screen.
+
+https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_tree.c#L79-L97
+
+Here is a screenshot showing the structure of the parsed NestedText document:
+
+![screenshot](img/ex-tree.png "console output of ex_tree")
 
 
 # License ######################################################################
