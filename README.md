@@ -90,8 +90,7 @@ Specify the size of the integrated memory buffer of the `NT_PARSER` structure by
 defining the `NT_PARSER_NCOUNT` macro before including the `nt4c.h` header. The
 integrated memory was added to increase the API usage convenience in cases where
 the size of the input document is always known to be small (see
-[ex_hello](examples/src/ex_hello.c) and
-[This example](examples/src/ex_pretty.c)).
+[ex_hello](examples/src/ex_hello.c) and [ex_pretty](examples/src/ex_pretty.c)).
 
 https://github.com/1Hyena/nt4c/blob/acc5fe1d535e66a7bd24b6def2de34ba2521d3c2/nt4c.h#L35-L37
 
