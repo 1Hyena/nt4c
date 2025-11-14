@@ -131,7 +131,7 @@ https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/exa
 Here is a NestedText document before and after pretty-printing, as shown in the
 screenshot below:
 
-https://github.com/1Hyena/nt4c/blob/2c24be5802d1af9dd911616434e4df967f1bff57/examples/ugly.nt#L1-L29
+https://github.com/1Hyena/nt4c/blob/934ab23c1fcf461df2cfb57dfc8e114004588a48/examples/ugly.nt#L1-L29
 
 ![screenshot](img/ex_pretty.png "console output of ex_pretty")
 
