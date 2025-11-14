@@ -34,8 +34,8 @@ standard of the C programming language. It includes the following features:
 * **Compactness:** The NT4C parser is implemented in a single header file with
   no dependencies other than the standard C library.
 
-* **Embedding:** The NT4C parser is easy to reuse in other projects, with a
-  straightforward API that consists of just one function, `nt_parse()`.
+* **Embedding:** The NT4C parser is easily reusable in other projects with a
+  simple API that includes a few key functions, primarily `nt_parse()`.
 
 * **Tree model:** NT4C parses the entire document and constructs a graph (DOM)
   where each node directly references a segment from the input string.
