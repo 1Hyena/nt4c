@@ -598,7 +598,10 @@ static const char *nt4c_parser_deserialize(
     }
     else {
         const char *key = after_spaces;
-        const char *key_op = nt4c_str_skip_key(key, line_size - spaces);
+        const char *key_space = nt4c_str_skip_key(key, line_size - spaces);
+        const char *key_op = nt4c_str_skip_spaces(
+            key_space, line_size - nt4c_long_to_size(key_space - str)
+        );
         const char *after_key_op = nullptr;
         bool invalid = false;
 
@@ -670,8 +673,20 @@ static const char *nt4c_parser_deserialize(
 
         if (key_node) {
             nt4c_node_set_data(
-                key_node, key, nt4c_long_to_size(key_op - key)
+                key_node, key, nt4c_long_to_size(key_space - key)
             );
+        }
+
+        if (key_space < key_op) {
+            NT_NODE *gap_node = nt4c_parser_create_node_type(parser, NT_SPACE);
+
+            if (gap_node) {
+                nt4c_node_set_data(
+                    gap_node, key_space, nt4c_long_to_size(key_op - key_space)
+                );
+
+                nt4c_node_to_node(gap_node, key_node);
+            }
         }
 
         if (after_key_op) {
@@ -1140,6 +1155,7 @@ static const char *nt4c_str_skip_lst_tag(const char *str, size_t str_sz) {
 static const char *nt4c_str_skip_key(const char *str, size_t str_sz) {
     const char *s = str;
     const char *colon = nullptr;
+    const char *space = nullptr;
 
     while (*s && s < str + str_sz) {
         const char *next = nt4c_str_skip_byte(
@@ -1151,6 +1167,10 @@ static const char *nt4c_str_skip_key(const char *str, size_t str_sz) {
         }
 
         if (next - s == 1) {
+            if (!colon && *s == ' ') {
+                if (!space) space = s;
+            }
+
             if (s == str) {
                 switch (*s) {
                     case ' ':
@@ -1163,7 +1183,7 @@ static const char *nt4c_str_skip_key(const char *str, size_t str_sz) {
             }
             else if (colon) {
                 if (*s == ' ' || *s == '\n') {
-                    return colon;
+                    break;
                 }
                 else {
                     colon = nullptr;
@@ -1172,12 +1192,15 @@ static const char *nt4c_str_skip_key(const char *str, size_t str_sz) {
             else if (*s == ':') {
                 colon = s;
             }
+            else if (*s != ' ') {
+                space = nullptr;
+            }
         }
 
         s = next;
     }
 
-    return colon ? colon : str;
+    return (colon && space) ? space : (colon ? colon : str);
 }
 
 static const char *nt4c_str_skip_key_op(const char *str, size_t str_sz) {
