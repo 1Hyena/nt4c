@@ -116,36 +116,34 @@ typedef struct NT_PARSER {
     } bitset;
 } NT_PARSER;
 
-static NT_NODE *nt_parser_create_node(NT_PARSER *);
-static NT_NODE *nt_parser_create_node_type(NT_PARSER *, NT_TYPE);
-static bool     nt_parser_allows_all(NT_PARSER *, NT_TYPE);
-static bool     nt_parser_allows_any(NT_PARSER *, NT_TYPE);
-static void     nt_node_reverse(NT_NODE *);
-static void     nt_node_set_data(NT_NODE *, const char *data, size_t size);
-static void     nt_node_set_type(NT_NODE *, NT_TYPE);
-static void     nt_node_to_node(NT_NODE *, NT_NODE *to);
-static NT_NODE *nt_node_from_node(NT_NODE *node);
-
-static const char *nt_parser_deserialize(
+// Private API: ////////////////////////////////////////////////////////////////
+static const char *nt4c_parser_deserialize(
     NT_PARSER *, const char *str, size_t str_sz, size_t indent, NT_NODE *parent,
     size_t depth
 );
 
-static const char *nt_str_seg_skip_spaces(const char *str, size_t str_sz);
-static const char *nt_str_seg_first_line_size(
-    const char *str, size_t str_sz, size_t *line_size
-);
-static const char *nt_str_seg_skip_string_tag(const char *str, size_t str_sz);
-static const char *nt_str_seg_skip_list_tag(const char *str, size_t str_sz);
-static const char *nt_str_seg_skip_key(const char *str, size_t str_sz);
-static const char *nt_str_seg_skip_key_op(const char *str, size_t str_sz);
-static const char *nt_str_seg_skip_byte(const char *str, size_t str_sz);
-static const char *nt_str_seg_skip_nest(const char *str, size_t str_sz, size_t indent);
-
-static void     nt_print_log(char *fmt, ...);
-static size_t   nt_long_to_size(long);
-static long     nt_size_to_long(size_t);
-static int      nt_size_to_int(size_t);
+static bool         nt4c_parser_allows_all(NT_PARSER *, NT_TYPE);
+static bool         nt4c_parser_allows_any(NT_PARSER *, NT_TYPE);
+static const char * nt4c_str_line_size(const char *, size_t size, size_t *lnsz);
+static const char * nt4c_str_skip_byte(const char *, size_t size);
+static const char * nt4c_str_skip_key(const char *, size_t size);
+static const char * nt4c_str_skip_key_op(const char *, size_t size);
+static const char * nt4c_str_skip_lst_tag(const char *, size_t size);
+static const char * nt4c_str_skip_mls_tag(const char *, size_t size);
+static const char * nt4c_str_skip_nest(const char *, size_t sz, size_t indent);
+static const char * nt4c_str_skip_spaces(const char *, size_t size);
+static int          nt4c_size_to_int(size_t);
+static long         nt4c_size_to_long(size_t);
+static NT_NODE *    nt4c_node_from_node(NT_NODE *node);
+static NT_NODE *    nt4c_parser_create_node(NT_PARSER *);
+static NT_NODE *    nt4c_parser_create_node_type(NT_PARSER *, NT_TYPE);
+static size_t       nt4c_long_to_size(long);
+static void         nt4c_node_reverse(NT_NODE *);
+static void         nt4c_node_set_data(NT_NODE *, const char *data, size_t sz);
+static void         nt4c_node_set_type(NT_NODE *, NT_TYPE);
+static void         nt4c_node_to_node(NT_NODE *, NT_NODE *to);
+static void         nt4c_print_log(char *fmt, ...);
+////////////////////////////////////////////////////////////////////////////////
 
 static inline void nt_parser_set_memory(
     NT_PARSER *parser, NT_NODE *nodes, size_t count
@@ -169,14 +167,6 @@ static inline void nt_parser_set_whitelist(
 
 static inline void nt_parser_set_recursion(NT_PARSER *parser, size_t depth) {
     parser->depth = depth;
-}
-
-static inline bool nt_parser_allows_all(NT_PARSER *parser, NT_TYPE types) {
-    return !(types & parser->node.blacklist);
-}
-
-static inline bool nt_parser_allows_any(NT_PARSER *parser, NT_TYPE types) {
-    return !((types & parser->node.blacklist) == types);
 }
 
 static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
@@ -211,7 +201,7 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
     }
 
     NT_NODE tmp_node = {};
-    NT_NODE *top_node = nt_parser_create_node(parser);
+    NT_NODE *top_node = nt4c_parser_create_node(parser);
 
     if (top_node) {
         parser->nest.root = top_node;
@@ -220,14 +210,14 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
         top_node = &tmp_node;
     }
 
-    nt_node_set_type(top_node, top_collections);
+    nt4c_node_set_type(top_node, top_collections);
 
     const char *s = str;
     str_sz = str_sz ? str_sz : strlen(s);
 
     while (*s && s < str + str_sz) {
-        const char *next = nt_parser_deserialize(
-            parser, s, str_sz - nt_long_to_size(s - str), 0, top_node, 1
+        const char *next = nt4c_parser_deserialize(
+            parser, s, str_sz - nt4c_long_to_size(s - str), 0, top_node, 1
         );
 
         if (next == nullptr) {
@@ -242,7 +232,7 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
     }
 
     if (top_node->type == NT_TOP_MLS) {
-        NT_NODE *newline = nt_parser_create_node_type(
+        NT_NODE *newline = nt4c_parser_create_node_type(
             parser, NT_NEWLINE // Always increase the node count for estimation.
         );
 
@@ -254,41 +244,49 @@ static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
             // The last multiline string must not have a newline in the end.
 
             size_t last_line_sz;
-            nt_str_seg_first_line_size(child->data, child->size, &last_line_sz);
+            nt4c_str_line_size(child->data, child->size, &last_line_sz);
 
             const char *end_of_last_line = child->data + last_line_sz;
             size_t nlsz = child->size - last_line_sz;
 
             if (newline) {
-                nt_node_set_data(newline, end_of_last_line, nlsz);
-                nt_node_to_node(newline, top_node);
+                nt4c_node_set_data(newline, end_of_last_line, nlsz);
+                nt4c_node_to_node(newline, top_node);
             }
 
             child->size = last_line_sz;
-            nt_node_set_type(child, NT_STR_ROL);
+            nt4c_node_set_type(child, NT_STR_ROL);
 
             break;
         }
     }
 
-    nt_node_reverse(top_node);
+    nt4c_node_reverse(top_node);
 
     if (top_node->type & NT_TOP_NIL) {
         // Top type remains ambiguous. Resolve it as nil.
-        nt_node_set_type(top_node, NT_TOP_NIL);
+        nt4c_node_set_type(top_node, NT_TOP_NIL);
     }
 
-    if (!nt_parser_allows_all(parser, top_node->type)) {
+    if (!nt4c_parser_allows_all(parser, top_node->type)) {
         parser->node.count  = 0;
         parser->nest.begin  = nullptr;
         parser->nest.end    = nullptr;
         parser->nest.root   = nullptr;
     }
 
-    return nt_size_to_int(parser->node.count);
+    return nt4c_size_to_int(parser->node.count);
 }
 
-static const char *nt_parser_deserialize(
+static inline bool nt4c_parser_allows_all(NT_PARSER *parser, NT_TYPE types) {
+    return !(types & parser->node.blacklist);
+}
+
+static inline bool nt4c_parser_allows_any(NT_PARSER *parser, NT_TYPE types) {
+    return !((types & parser->node.blacklist) == types);
+}
+
+static const char *nt4c_parser_deserialize(
     NT_PARSER *parser,
     const char *str, size_t str_sz, size_t indent, NT_NODE *parent, size_t depth
 ) {
@@ -312,40 +310,40 @@ static const char *nt_parser_deserialize(
     };
 
     size_t line_size;
-    const char *next_line = nt_str_seg_first_line_size(str, str_sz, &line_size);
+    const char *next_line = nt4c_str_line_size(str, str_sz, &line_size);
 
     if (next_line == str) {
         return str;
     }
 
-    const char *after_spaces = nt_str_seg_skip_spaces(str, str_sz);
-    size_t spaces = nt_long_to_size(after_spaces - str);
+    const char *after_spaces = nt4c_str_skip_spaces(str, str_sz);
+    size_t spaces = nt4c_long_to_size(after_spaces - str);
 
     if (spaces < indent) {
         return str;
     }
 
     if (spaces) {
-        NT_NODE *node = nt_parser_create_node_type(parser, NT_SPACE);
+        NT_NODE *node = nt4c_parser_create_node_type(parser, NT_SPACE);
 
         if (node != nullptr) {
-            nt_node_set_data(node, str, spaces);
-            nt_node_to_node(node, parent);
+            nt4c_node_set_data(node, str, spaces);
+            nt4c_node_to_node(node, parent);
         }
     }
 
     const char *end_of_line = str + line_size;
-    size_t newline_size = nt_long_to_size(next_line - (str + line_size));
+    size_t newline_size = nt4c_long_to_size(next_line - (str + line_size));
 
-    if (after_spaces - str == nt_size_to_long(line_size)) {
+    if (after_spaces - str == nt4c_size_to_long(line_size)) {
         // Empty lines are not ignored.
 
         if (newline_size) {
-            NT_NODE *newline = nt_parser_create_node_type(parser, NT_NEWLINE);
+            NT_NODE *newline = nt4c_parser_create_node_type(parser, NT_NEWLINE);
 
             if (newline) {
-                nt_node_set_data(newline, end_of_line, newline_size);
-                nt_node_to_node(newline, parent);
+                nt4c_node_set_data(newline, end_of_line, newline_size);
+                nt4c_node_to_node(newline, parent);
             }
         }
 
@@ -353,52 +351,52 @@ static const char *nt_parser_deserialize(
     }
 
     if (parser->bitset.debug) {
-        nt_print_log("%.*s\n", nt_size_to_int(line_size), str);
+        nt4c_print_log("%.*s\n", nt4c_size_to_int(line_size), str);
     }
 
     if (depth == parser->depth) {
-        NT_NODE *node = nt_parser_create_node_type(parser, NT_DEEP);
+        NT_NODE *node = nt4c_parser_create_node_type(parser, NT_DEEP);
 
         if (node) {
-            nt_node_set_data(node, after_spaces, line_size - spaces);
-            nt_node_to_node(node, parent);
+            nt4c_node_set_data(node, after_spaces, line_size - spaces);
+            nt4c_node_to_node(node, parent);
         }
 
         if (newline_size) {
-            NT_NODE *newline = nt_parser_create_node_type(parser, NT_NEWLINE);
+            NT_NODE *newline = nt4c_parser_create_node_type(parser, NT_NEWLINE);
 
             if (newline) {
-                nt_node_set_data(newline, end_of_line, newline_size);
-                nt_node_to_node(newline, parent);
+                nt4c_node_set_data(newline, end_of_line, newline_size);
+                nt4c_node_to_node(newline, parent);
             }
         }
 
         return next_line;
     }
     else if (*after_spaces == '#') {
-        NT_NODE *tag_node = nt_parser_create_node_type(parser, NT_TAG_COM);
+        NT_NODE *tag_node = nt4c_parser_create_node_type(parser, NT_TAG_COM);
 
         if (tag_node) {
-            nt_node_set_data(tag_node, after_spaces, 1);
-            nt_node_to_node(tag_node, parent);
+            nt4c_node_set_data(tag_node, after_spaces, 1);
+            nt4c_node_to_node(tag_node, parent);
         }
 
-        NT_NODE *val_node = nt_parser_create_node_type(parser, NT_STR_COM);
+        NT_NODE *val_node = nt4c_parser_create_node_type(parser, NT_STR_COM);
 
         if (val_node) {
-            nt_node_set_data(
+            nt4c_node_set_data(
                 val_node, after_spaces + 1, line_size - (spaces + 1)
             );
 
-            nt_node_to_node(val_node, parent);
+            nt4c_node_to_node(val_node, parent);
         }
 
         if (newline_size) {
-            NT_NODE *newline = nt_parser_create_node_type(parser, NT_NEWLINE);
+            NT_NODE *newline = nt4c_parser_create_node_type(parser, NT_NEWLINE);
 
             if (newline) {
-                nt_node_set_data(newline, end_of_line, newline_size);
-                nt_node_to_node(newline, parent);
+                nt4c_node_set_data(newline, end_of_line, newline_size);
+                nt4c_node_to_node(newline, parent);
             }
         }
 
@@ -406,7 +404,7 @@ static const char *nt_parser_deserialize(
     }
     else if (*after_spaces == '>') {
         const char *tag = after_spaces;
-        const char *rol = nt_str_seg_skip_string_tag(tag, line_size - spaces);
+        const char *rol = nt4c_str_skip_mls_tag(tag, line_size - spaces);
         bool invalid = false;
 
         if (tag == rol) {
@@ -414,13 +412,13 @@ static const char *nt_parser_deserialize(
         }
         else {
             if (parent->type & NT_KEY_MLS) {
-                nt_node_set_type(parent, NT_KEY_MLS);
+                nt4c_node_set_type(parent, NT_KEY_MLS);
             }
             else if (parent->type & NT_TAG_LST_MLS) {
-                nt_node_set_type(parent, NT_TAG_LST_MLS);
+                nt4c_node_set_type(parent, NT_TAG_LST_MLS);
             }
             else if (parent->type & NT_TOP_MLS) {
-                nt_node_set_type(parent, NT_TOP_MLS);
+                nt4c_node_set_type(parent, NT_TOP_MLS);
             }
             else {
                 invalid = true;
@@ -429,44 +427,44 @@ static const char *nt_parser_deserialize(
 
         if (invalid) {
             // Could not determine a valid multiline string tag.
-            NT_NODE *node = nt_parser_create_node_type(parser, NT_INVALID);
+            NT_NODE *node = nt4c_parser_create_node_type(parser, NT_INVALID);
 
             if (node) {
-                nt_node_set_data(node, tag, line_size - spaces);
-                nt_node_to_node(node, parent);
+                nt4c_node_set_data(node, tag, line_size - spaces);
+                nt4c_node_to_node(node, parent);
             }
 
             if (newline_size) {
-                NT_NODE *newline = nt_parser_create_node_type(
+                NT_NODE *newline = nt4c_parser_create_node_type(
                     parser, NT_NEWLINE
                 );
 
                 if (newline) {
-                    nt_node_set_data(newline, end_of_line, newline_size);
-                    nt_node_to_node(newline, parent);
+                    nt4c_node_set_data(newline, end_of_line, newline_size);
+                    nt4c_node_to_node(newline, parent);
                 }
             }
 
             return next_line;
         }
 
-        NT_NODE *tag_node = nt_parser_create_node_type(parser, NT_TAG_MLS);
-        size_t tag_sz = nt_long_to_size(rol - tag);
+        NT_NODE *tag_node = nt4c_parser_create_node_type(parser, NT_TAG_MLS);
+        size_t tag_sz = nt4c_long_to_size(rol - tag);
 
         if (tag_node) {
-            nt_node_set_data(tag_node, after_spaces, tag_sz);
-            nt_node_to_node(tag_node, parent);
+            nt4c_node_set_data(tag_node, after_spaces, tag_sz);
+            nt4c_node_to_node(tag_node, parent);
         }
 
-        NT_NODE *val_node = nt_parser_create_node_type(parser, NT_STR_MLN);
+        NT_NODE *val_node = nt4c_parser_create_node_type(parser, NT_STR_MLN);
 
         if (val_node) {
-            nt_node_set_data(
+            nt4c_node_set_data(
                 val_node, after_spaces + tag_sz,
-                nt_long_to_size(next_line - rol)
+                nt4c_long_to_size(next_line - rol)
             );
 
-            nt_node_to_node(val_node, parent);
+            nt4c_node_to_node(val_node, parent);
         }
 
         return next_line;
@@ -479,7 +477,7 @@ static const char *nt_parser_deserialize(
 
     if (*after_spaces == '-') {
         const char *tag = after_spaces;
-        const char *rol = nt_str_seg_skip_list_tag(tag, line_size - spaces);
+        const char *rol = nt4c_str_skip_lst_tag(tag, line_size - spaces);
         bool invalid = false;
 
         if (tag == rol) {
@@ -487,13 +485,13 @@ static const char *nt_parser_deserialize(
         }
         else {
             if (parent->type & NT_KEY_LST) {
-                nt_node_set_type(parent, NT_KEY_LST);
+                nt4c_node_set_type(parent, NT_KEY_LST);
             }
             else if (parent->type & NT_TAG_LST_LST) {
-                nt_node_set_type(parent, NT_TAG_LST_LST);
+                nt4c_node_set_type(parent, NT_TAG_LST_LST);
             }
             else if (parent->type & NT_TOP_LST) {
-                nt_node_set_type(parent, NT_TOP_LST);
+                nt4c_node_set_type(parent, NT_TOP_LST);
             }
             else {
                 invalid = true;
@@ -502,28 +500,28 @@ static const char *nt_parser_deserialize(
 
         if (invalid) {
             // Could not determine a valid list tag.
-            NT_NODE *node = nt_parser_create_node_type(parser, NT_INVALID);
+            NT_NODE *node = nt4c_parser_create_node_type(parser, NT_INVALID);
 
             if (node) {
-                nt_node_set_data(node, tag, line_size - spaces);
-                nt_node_to_node(node, parent);
+                nt4c_node_set_data(node, tag, line_size - spaces);
+                nt4c_node_to_node(node, parent);
             }
 
             if (newline_size) {
-                NT_NODE *newline = nt_parser_create_node_type(
+                NT_NODE *newline = nt4c_parser_create_node_type(
                     parser, NT_NEWLINE
                 );
 
                 if (newline) {
-                    nt_node_set_data(newline, end_of_line, newline_size);
-                    nt_node_to_node(newline, parent);
+                    nt4c_node_set_data(newline, end_of_line, newline_size);
+                    nt4c_node_to_node(newline, parent);
                 }
             }
 
             return next_line;
         }
 
-        size_t tag_sz = nt_long_to_size(rol - tag);
+        size_t tag_sz = nt4c_long_to_size(rol - tag);
         NT_NODE *tag_node = nullptr;
 
         if (tag_sz == 2) {
@@ -533,30 +531,30 @@ static const char *nt_parser_deserialize(
             nest_type = any_collection.list_tags;
         }
 
-        if (nt_parser_allows_any(parser, nest_type)) {
-            tag_node = nt_parser_create_node(parser);
+        if (nt4c_parser_allows_any(parser, nest_type)) {
+            tag_node = nt4c_parser_create_node(parser);
 
             if (tag_node) {
-                nt_node_set_type(tag_node, nest_type);
+                nt4c_node_set_type(tag_node, nest_type);
             }
         }
         else skip_nest = true;
 
         if (tag_node) {
-            nt_node_set_data(tag_node, tag, tag_sz);
+            nt4c_node_set_data(tag_node, tag, tag_sz);
         }
 
         if (tag_sz == 2) {
-            NT_NODE *val_node = nt_parser_create_node_type(
+            NT_NODE *val_node = nt4c_parser_create_node_type(
                 parser, NT_STR_ROL
             );
 
             if (val_node) {
-                nt_node_set_data(
+                nt4c_node_set_data(
                     val_node, tag + tag_sz, line_size - (spaces + tag_sz)
                 );
 
-                nt_node_to_node(val_node, tag_node);
+                nt4c_node_to_node(val_node, tag_node);
             }
         }
 
@@ -564,13 +562,13 @@ static const char *nt_parser_deserialize(
     }
     else {
         const char *key = after_spaces;
-        const char *key_op = nt_str_seg_skip_key(key, line_size - spaces);
+        const char *key_op = nt4c_str_skip_key(key, line_size - spaces);
         const char *after_key_op = nullptr;
         bool invalid = false;
 
         if (key_op != key) {
-            after_key_op = nt_str_seg_skip_key_op(
-                key_op, line_size - nt_long_to_size(key_op - str)
+            after_key_op = nt4c_str_skip_key_op(
+                key_op, line_size - nt4c_long_to_size(key_op - str)
             );
         }
 
@@ -579,13 +577,13 @@ static const char *nt_parser_deserialize(
         }
         else {
             if (parent->type & NT_KEY_DCT) {
-                nt_node_set_type(parent, NT_KEY_DCT);
+                nt4c_node_set_type(parent, NT_KEY_DCT);
             }
             else if (parent->type & NT_TAG_LST_DCT) {
-                nt_node_set_type(parent, NT_TAG_LST_DCT);
+                nt4c_node_set_type(parent, NT_TAG_LST_DCT);
             }
             else if (parent->type & NT_TOP_DCT) {
-                nt_node_set_type(parent, NT_TOP_DCT);
+                nt4c_node_set_type(parent, NT_TOP_DCT);
             }
             else {
                 invalid = true;
@@ -595,21 +593,21 @@ static const char *nt_parser_deserialize(
         if (invalid) {
             // Could not determine a valid key.
 
-            NT_NODE *node = nt_parser_create_node_type(parser, NT_INVALID);
+            NT_NODE *node = nt4c_parser_create_node_type(parser, NT_INVALID);
 
             if (node) {
-                nt_node_set_data(node, key, line_size - spaces);
-                nt_node_to_node(node, parent);
+                nt4c_node_set_data(node, key, line_size - spaces);
+                nt4c_node_to_node(node, parent);
             }
 
             if (newline_size) {
-                NT_NODE *newline = nt_parser_create_node_type(
+                NT_NODE *newline = nt4c_parser_create_node_type(
                     parser, NT_NEWLINE
                 );
 
                 if (newline) {
-                    nt_node_set_data(newline, end_of_line, newline_size);
-                    nt_node_to_node(newline, parent);
+                    nt4c_node_set_data(newline, end_of_line, newline_size);
+                    nt4c_node_to_node(newline, parent);
                 }
             }
 
@@ -625,18 +623,18 @@ static const char *nt_parser_deserialize(
             nest_type = any_collection.keys;
         }
 
-        if (nt_parser_allows_any(parser, nest_type)) {
-            key_node = nt_parser_create_node(parser);
+        if (nt4c_parser_allows_any(parser, nest_type)) {
+            key_node = nt4c_parser_create_node(parser);
 
             if (key_node) {
-                nt_node_set_type(key_node, nest_type);
+                nt4c_node_set_type(key_node, nest_type);
             }
         }
         else skip_nest = true;
 
         if (key_node) {
-            nt_node_set_data(
-                key_node, key, nt_long_to_size(key_op - key)
+            nt4c_node_set_data(
+                key_node, key, nt4c_long_to_size(key_op - key)
             );
         }
 
@@ -644,35 +642,37 @@ static const char *nt_parser_deserialize(
             NT_NODE *op_node = nullptr;
 
             if (after_key_op && key_op[1] == ' ') {
-                op_node = nt_parser_create_node_type(parser, NT_SET_ROL);
+                op_node = nt4c_parser_create_node_type(parser, NT_SET_ROL);
             }
-            else if (nt_parser_allows_any(parser, any_collection.setters)) {
-                op_node = nt_parser_create_node(parser);
+            else if (nt4c_parser_allows_any(parser, any_collection.setters)) {
+                op_node = nt4c_parser_create_node(parser);
 
                 if (op_node) {
-                    nt_node_set_type(op_node, any_collection.setters);
+                    nt4c_node_set_type(op_node, any_collection.setters);
                 }
             }
 
             if (op_node) {
-                nt_node_set_data(
-                    op_node, key_op, nt_long_to_size(after_key_op - key_op)
+                nt4c_node_set_data(
+                    op_node, key_op, nt4c_long_to_size(after_key_op - key_op)
                 );
 
-                nt_node_to_node(op_node, key_node);
+                nt4c_node_to_node(op_node, key_node);
             }
         }
 
         if (after_key_op && key_op[1] == ' ') {
-            NT_NODE *val_node = nt_parser_create_node_type(parser, NT_STR_ROL);
+            NT_NODE *val_node = nt4c_parser_create_node_type(
+                parser, NT_STR_ROL
+            );
 
             if (val_node) {
-                nt_node_set_data(
+                nt4c_node_set_data(
                     val_node, after_key_op,
-                    line_size - nt_long_to_size(after_key_op - str)
+                    line_size - nt4c_long_to_size(after_key_op - str)
                 );
 
-                nt_node_to_node(val_node, key_node);
+                nt4c_node_to_node(val_node, key_node);
             }
         }
 
@@ -680,11 +680,11 @@ static const char *nt_parser_deserialize(
     }
 
     if (newline_size) {
-        NT_NODE *newline = nt_parser_create_node_type(parser, NT_NEWLINE);
+        NT_NODE *newline = nt4c_parser_create_node_type(parser, NT_NEWLINE);
 
         if (newline) {
-            nt_node_set_data(newline, end_of_line, newline_size);
-            nt_node_to_node(newline, nest);
+            nt4c_node_set_data(newline, end_of_line, newline_size);
+            nt4c_node_to_node(newline, nest);
         }
     }
 
@@ -704,13 +704,13 @@ static const char *nt_parser_deserialize(
     while (*s && s < str + str_sz) {
         next_line = (
             skip_nest ? (
-                nt_str_seg_skip_nest(
-                    s, str_sz - nt_long_to_size(s - str), spaces
+                nt4c_str_skip_nest(
+                    s, str_sz - nt4c_long_to_size(s - str), spaces
                 )
             ) : (
-                nt_parser_deserialize(
-                    parser, s, str_sz - nt_long_to_size(s - str), spaces, nest,
-                    next_depth
+                nt4c_parser_deserialize(
+                    parser, s, str_sz - nt4c_long_to_size(s - str), spaces,
+                    nest, next_depth
                 )
             )
         );
@@ -728,7 +728,7 @@ static const char *nt_parser_deserialize(
     }
 
     if ((nest->type & (NT_KEY_MLS|NT_TAG_LST_MLS)) == nest->type) {
-        NT_NODE *newline = nt_parser_create_node_type(
+        NT_NODE *newline = nt4c_parser_create_node_type(
             parser, NT_NEWLINE // Always increase the node count for estimation.
         );
 
@@ -740,19 +740,19 @@ static const char *nt_parser_deserialize(
             // The last multiline string must not have a newline in the end.
 
             size_t last_line_sz;
-            nt_str_seg_first_line_size(child->data, child->size, &last_line_sz);
+            nt4c_str_line_size(child->data, child->size, &last_line_sz);
 
             const char *end_of_last_line = child->data + last_line_sz;
             size_t nlsz = child->size - last_line_sz;
 
             if (newline) {
-                nt_node_set_data(newline, end_of_last_line, nlsz);
-                nt_node_to_node(newline, nest);
+                nt4c_node_set_data(newline, end_of_last_line, nlsz);
+                nt4c_node_to_node(newline, nest);
                 newline = nullptr;
             }
 
             child->size = last_line_sz;
-            nt_node_set_type(child, NT_STR_ROL);
+            nt4c_node_set_type(child, NT_STR_ROL);
 
             break;
         }
@@ -762,11 +762,11 @@ static const char *nt_parser_deserialize(
         }
     }
 
-    nt_node_reverse(nest);
+    nt4c_node_reverse(nest);
 
     if (nest->type & (NT_KEY_NIL|NT_TAG_LST_NIL)) {
         // If the nest type remains ambiguous, default to nil.
-        nt_node_set_type(nest, nest->type & (NT_KEY_NIL|NT_TAG_LST_NIL));
+        nt4c_node_set_type(nest, nest->type & (NT_KEY_NIL|NT_TAG_LST_NIL));
     }
 
     for (NT_NODE *child = nest->children; child; child = child->next) {
@@ -776,27 +776,27 @@ static const char *nt_parser_deserialize(
 
         switch (nest->type) {
             case NT_KEY_NIL: {
-                nt_node_set_type(child, NT_SET_NIL);
+                nt4c_node_set_type(child, NT_SET_NIL);
                 break;
             }
             case NT_KEY_ROL: {
-                nt_node_set_type(child, NT_SET_ROL);
+                nt4c_node_set_type(child, NT_SET_ROL);
                 break;
             }
             case NT_KEY_MLS: {
-                nt_node_set_type(child, NT_SET_MLS);
+                nt4c_node_set_type(child, NT_SET_MLS);
                 break;
             }
             case NT_KEY_LST: {
-                nt_node_set_type(child, NT_SET_LST);
+                nt4c_node_set_type(child, NT_SET_LST);
                 break;
             }
             case NT_KEY_DCT: {
-                nt_node_set_type(child, NT_SET_DCT);
+                nt4c_node_set_type(child, NT_SET_DCT);
                 break;
             }
             default: {
-                nt_node_set_type(child, NT_INVALID);
+                nt4c_node_set_type(child, NT_INVALID);
                 break;
             }
         }
@@ -804,7 +804,7 @@ static const char *nt_parser_deserialize(
         break;
     }
 
-    if (!nt_parser_allows_all(parser, nest->type)) {
+    if (!nt4c_parser_allows_all(parser, nest->type)) {
         // Since this nest is blacklisted, all of its children are too.
         // Therefore, the nest and its children must not add to the total node
         // count.
@@ -824,7 +824,7 @@ static const char *nt_parser_deserialize(
         }
     }
     else {
-        nt_node_to_node(nest, parent);
+        nt4c_node_to_node(nest, parent);
 
         for (NT_NODE *child = nest->children; child; child = child->next) {
             // If the nest ends with a newline node, relocate it to the end of
@@ -836,8 +836,8 @@ static const char *nt_parser_deserialize(
             }
 
             if (child->type == NT_NEWLINE) {
-                nt_node_from_node(child);
-                nt_node_to_node(child, parent);
+                nt4c_node_from_node(child);
+                nt4c_node_to_node(child, parent);
             }
 
             break;
@@ -847,7 +847,7 @@ static const char *nt_parser_deserialize(
     return s;
 }
 
-static NT_NODE *nt_parser_create_node(NT_PARSER *parser) {
+static NT_NODE *nt4c_parser_create_node(NT_PARSER *parser) {
     static NT_NODE zero_node;
     NT_NODE *node = nullptr;
 
@@ -869,21 +869,21 @@ static NT_NODE *nt_parser_create_node(NT_PARSER *parser) {
     return node;
 }
 
-static NT_NODE *nt_parser_create_node_type(NT_PARSER *parser, NT_TYPE type) {
-    if (!nt_parser_allows_all(parser, type)) {
+static NT_NODE *nt4c_parser_create_node_type(NT_PARSER *parser, NT_TYPE type) {
+    if (!nt4c_parser_allows_all(parser, type)) {
         return nullptr;
     }
 
-    NT_NODE *node = nt_parser_create_node(parser);
+    NT_NODE *node = nt4c_parser_create_node(parser);
 
     if (node) {
-        nt_node_set_type(node, type);
+        nt4c_node_set_type(node, type);
     }
 
     return node;
 }
 
-static void nt_node_reverse(NT_NODE *node) {
+static void nt4c_node_reverse(NT_NODE *node) {
     NT_NODE *child_next;
 
     for (NT_NODE *child = node->children; child; child = child_next) {
@@ -898,16 +898,16 @@ static void nt_node_reverse(NT_NODE *node) {
     }
 }
 
-static void nt_node_set_data(NT_NODE *node, const char *data, size_t size) {
+static void nt4c_node_set_data(NT_NODE *node, const char *data, size_t size) {
     node->data = data;
     node->size = size;
 }
 
-static void nt_node_set_type(NT_NODE *node, NT_TYPE type) {
+static void nt4c_node_set_type(NT_NODE *node, NT_TYPE type) {
     node->type = type;
 }
 
-static void nt_node_to_node(NT_NODE *node, NT_NODE *container) {
+static void nt4c_node_to_node(NT_NODE *node, NT_NODE *container) {
     if (node->parent) {
         abort(); // Let's require explicit removal from old parent.
     }
@@ -916,7 +916,7 @@ static void nt_node_to_node(NT_NODE *node, NT_NODE *container) {
         abort();
     }
 
-    nt_node_from_node(node);
+    nt4c_node_from_node(node);
 
     if (container->children) {
         container->children->prev = node;
@@ -927,7 +927,7 @@ static void nt_node_to_node(NT_NODE *node, NT_NODE *container) {
     node->parent = container;
 }
 
-static NT_NODE *nt_node_from_node(NT_NODE *node) {
+static NT_NODE *nt4c_node_from_node(NT_NODE *node) {
     NT_NODE *parent = node->parent;
 
     if (parent == nullptr) {
@@ -961,7 +961,7 @@ static NT_NODE *nt_node_from_node(NT_NODE *node) {
     return node;
 }
 
-static const char *nt_str_seg_first_line_size(
+static const char *nt4c_str_line_size(
     const char *str, size_t str_sz, size_t *line_size
 ) {
     const char *begin = str;
@@ -996,19 +996,23 @@ static const char *nt_str_seg_first_line_size(
 
     if (line_size) {
         *line_size = (
-            found ? nt_long_to_size(found - begin) : nt_long_to_size(s - begin)
+            found ? (
+                nt4c_long_to_size(found - begin)
+            ) : (
+                nt4c_long_to_size(s - begin)
+            )
         );
     }
 
     return s;
 }
 
-static const char *nt_str_seg_skip_spaces(const char *str, size_t str_sz) {
+static const char *nt4c_str_skip_spaces(const char *str, size_t str_sz) {
     const char *s = str;
 
     while (*s && s < str + str_sz) {
-        const char *next = nt_str_seg_skip_byte(
-            s, str_sz - nt_long_to_size(s - str)
+        const char *next = nt4c_str_skip_byte(
+            s, str_sz - nt4c_long_to_size(s - str)
         );
 
         if (next == s) {
@@ -1027,16 +1031,16 @@ static const char *nt_str_seg_skip_spaces(const char *str, size_t str_sz) {
     return s;
 }
 
-static const char *nt_str_seg_skip_byte(const char *str, size_t str_sz) {
+static const char *nt4c_str_skip_byte(const char *str, size_t str_sz) {
     return str_sz ? str + 1 : str;
 }
 
-static const char *nt_str_seg_skip_string_tag(const char *str, size_t str_sz) {
+static const char *nt4c_str_skip_mls_tag(const char *str, size_t str_sz) {
     const char *s = str;
 
     while (*s && s < str + str_sz) {
-        const char *next = nt_str_seg_skip_byte(
-            s, str_sz - nt_long_to_size(s - str)
+        const char *next = nt4c_str_skip_byte(
+            s, str_sz - nt4c_long_to_size(s - str)
         );
 
         if (next == s) {
@@ -1064,12 +1068,12 @@ static const char *nt_str_seg_skip_string_tag(const char *str, size_t str_sz) {
     return s;
 }
 
-static const char *nt_str_seg_skip_list_tag(const char *str, size_t str_sz) {
+static const char *nt4c_str_skip_lst_tag(const char *str, size_t str_sz) {
     const char *s = str;
 
     while (*s && s < str + str_sz) {
-        const char *next = nt_str_seg_skip_byte(
-            s, str_sz - nt_long_to_size(s - str)
+        const char *next = nt4c_str_skip_byte(
+            s, str_sz - nt4c_long_to_size(s - str)
         );
 
         if (next == s) {
@@ -1097,13 +1101,13 @@ static const char *nt_str_seg_skip_list_tag(const char *str, size_t str_sz) {
     return s;
 }
 
-static const char *nt_str_seg_skip_key(const char *str, size_t str_sz) {
+static const char *nt4c_str_skip_key(const char *str, size_t str_sz) {
     const char *s = str;
     const char *colon = nullptr;
 
     while (*s && s < str + str_sz) {
-        const char *next = nt_str_seg_skip_byte(
-            s, str_sz - nt_long_to_size(s - str)
+        const char *next = nt4c_str_skip_byte(
+            s, str_sz - nt4c_long_to_size(s - str)
         );
 
         if (next == s) {
@@ -1140,12 +1144,12 @@ static const char *nt_str_seg_skip_key(const char *str, size_t str_sz) {
     return colon ? colon : str;
 }
 
-static const char *nt_str_seg_skip_key_op(const char *str, size_t str_sz) {
+static const char *nt4c_str_skip_key_op(const char *str, size_t str_sz) {
     const char *s = str;
 
     while (*s && s < str + str_sz) {
-        const char *next = nt_str_seg_skip_byte(
-            s, str_sz - nt_long_to_size(s - str)
+        const char *next = nt4c_str_skip_byte(
+            s, str_sz - nt4c_long_to_size(s - str)
         );
 
         if (next == s) {
@@ -1173,18 +1177,18 @@ static const char *nt_str_seg_skip_key_op(const char *str, size_t str_sz) {
     return s;
 }
 
-static const char *nt_str_seg_skip_nest(
+static const char *nt4c_str_skip_nest(
     const char *str, size_t str_sz, size_t indent
 ) {
     size_t line_size;
-    const char *next_line = nt_str_seg_first_line_size(str, str_sz, &line_size);
+    const char *next_line = nt4c_str_line_size(str, str_sz, &line_size);
 
     if (next_line == str) {
         return str;
     }
 
-    const char *after_spaces = nt_str_seg_skip_spaces(str, str_sz);
-    size_t spaces = nt_long_to_size(after_spaces - str);
+    const char *after_spaces = nt4c_str_skip_spaces(str, str_sz);
+    size_t spaces = nt4c_long_to_size(after_spaces - str);
 
     if (spaces < indent) {
         return str;
@@ -1193,7 +1197,7 @@ static const char *nt_str_seg_skip_nest(
     return next_line;
 }
 
-static void nt_print_log(char *fmt, ...) {
+static void nt4c_print_log(char *fmt, ...) {
     va_list args;
 
     va_start (args, fmt);
@@ -1201,15 +1205,15 @@ static void nt_print_log(char *fmt, ...) {
     va_end(args);
 }
 
-static size_t nt_long_to_size(long a) {
+static size_t nt4c_long_to_size(long a) {
     return a < 0 ? 0 : (size_t) a;
 }
 
-static long nt_size_to_long(size_t a) {
+static long nt4c_size_to_long(size_t a) {
     return a > LONG_MAX ? LONG_MAX : (long) a;
 }
 
-static int nt_size_to_int(size_t a) {
+static int nt4c_size_to_int(size_t a) {
     return a > INT_MAX ? INT_MAX : (int) a;
 }
 

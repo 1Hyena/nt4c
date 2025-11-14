@@ -78,6 +78,7 @@ The deserialization graph is considered fully stored only when the value
 returned by `nt_parse()` is non-negative and less than or equal to the output
 buffer capacity.
 
+
 ### Examples ###################################################################
 
 #### ex_hello ##################################################################
