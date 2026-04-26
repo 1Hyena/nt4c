@@ -1,12 +1,9 @@
 // SPDX-License-Identifier: MIT
+#include "utils.h"
 #define NT_PARSER_NCOUNT 64 // The ugly.nt document does not exceed this length.
 #include "../../nt4c.h"
 #include <stdlib.h>
 
-const unsigned char input_data[] = {
-#embed "../ugly.nt" if_empty('M', 'i', 's', 's', 'i', 'n', 'g', '\n')
-    , '\0'
-};
 
 static int pretty_print(NT_NODE *node, size_t depth) {
     constexpr NT_TYPE body_nodes = (
@@ -31,7 +28,7 @@ static int pretty_print(NT_NODE *node, size_t depth) {
 
     constexpr NT_TYPE no_newline = (
         NT_TAG_COM | NT_TAG_MLS | NT_TAG_LST_ROL | NT_KEY_NIL | NT_KEY_MLS |
-        NT_KEY_LST | NT_KEY_DCT | NT_KEY_ROL     | NT_SET_ROL | NT_STR_MLN
+        NT_KEY_LST | NT_KEY_DCT | NT_KEY_ROL     | NT_SET_ROL
     );
 
     if (node->data) {
@@ -63,12 +60,20 @@ static int pretty_print(NT_NODE *node, size_t depth) {
 }
 
 int main(int, char **) {
-    NT_PARSER parser = { .settings = { .blacklist = NT_SPACE|NT_NEWLINE } };
+    size_t input_size;
+    char *input_data = read_file_to_memory("../ugly.nt", &input_size);
 
-    if (nt_parse((char *) input_data, 0, &parser) > (int) parser.mem.capacity) {
-        fprintf(stderr, "not enough memory for %lu nodes\n", parser.doc.length);
+    if (!input_data) {
+        fprintf(stderr, "%s\n", "failed to read the input file");
         return EXIT_FAILURE;
     }
 
-    return pretty_print(parser.doc.root, 0);
+    NT_PARSER parser = { .settings = { .blacklist = NT_SPACE|NT_NEWLINE } };
+
+    if (nt_parse(input_data, 0, &parser) > (int) parser.mem.capacity) {
+        fprintf(stderr, "not enough memory for %lu nodes\n", parser.doc.length);
+        return free_and_return(input_data, EXIT_FAILURE);
+    }
+
+    return free_and_return(input_data, pretty_print(parser.doc.root, 0));
 }

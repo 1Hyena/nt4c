@@ -2,14 +2,15 @@
 #include "../../nt4c.h"
 #include <stdlib.h>
 
+
+static int callback(NT_TYPE, const char *text, size_t size, void *, size_t) {
+    printf("%.*s\n", (int) size, text);
+    return -1;
+}
+
 int main(int, char **) {
-    NT_PARSER parser = {};
-
-    if (nt_parse("hello world", 0, &parser) <= 0) {
-        return EXIT_FAILURE;
-    }
-
-    printf("%.*s\n", (int) parser.doc.begin->size, parser.doc.begin->data);
+    NT_PARSER parser = { .callback = { .on_text = callback } };
+    nt_parse("hello world", 0, &parser);
 
     return EXIT_SUCCESS;
 }

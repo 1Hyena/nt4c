@@ -1,11 +1,8 @@
 // SPDX-License-Identifier: MIT
+#include "utils.h"
 #include "../../nt4c.h"
 #include <stdlib.h>
 
-const unsigned char input_data[] = {
-#embed "../repository.nt" if_empty('M', 'i', 's', 's', 'i', 'n', 'g', '\n')
-    , '\0'
-};
 
 static void print_tree(NT_NODE *node, size_t depth) {
     if (!node) {
@@ -77,21 +74,29 @@ static void print_tree(NT_NODE *node, size_t depth) {
 }
 
 int main(int, char **) {
+    size_t input_size;
+    char *input_data = read_file_to_memory("../repository.nt", &input_size);
+
+    if (!input_data) {
+        fprintf(stderr, "%s\n", "failed to read the input file");
+        return EXIT_FAILURE;
+    }
+
     constexpr size_t node_count = 200;
     NT_NODE nodes[node_count];
     NT_PARSER parser = {};
 
     nt_parser_set_memory(&parser, nodes, node_count);
 
-    int result = nt_parse((char *) input_data, sizeof(input_data), &parser);
+    int result = nt_parse(input_data, input_size, &parser);
 
     if (result > (int) node_count) {
         fprintf(stderr, "not enough memory for %lu nodes\n", parser.doc.length);
 
-        return EXIT_FAILURE;
+        return free_and_return(input_data, EXIT_FAILURE);
     }
 
     print_tree(parser.doc.root, 0);
 
-    return EXIT_SUCCESS;
+    return free_and_return(input_data, EXIT_SUCCESS);
 }
