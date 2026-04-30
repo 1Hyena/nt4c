@@ -151,9 +151,27 @@ Here is a screenshot showing the structure of the parsed NestedText document:
 
 ### API ########################################################################
 
+* [Initialization](#initialization)
+  - [nt_make_parser](#nt_make_parser) () → `NT_PARSER`
+  - [nt_parser_init](#nt_parser_init) (&*parser*)
+
 * [Parsing](#parsing)
   - [nt_parse](#nt_parse) (*text*, *text size*, *callback*, *userdata*) → `int`
   - [nt_parser_parse](#nt_parser_parse) (&*parser*, *text*, *text size*) → `int`
+
+* [Configuration](#configuration)
+  - [nt_parser_set_memory](#nt_parser_set_memory) (&*parser*, &*nodes*, *node count*)
+  - [nt_parser_set_recursion](#nt_parser_set_recursion) (&*parser*, *depth*)
+  - [nt_parser_set_blacklist](#nt_parser_set_blacklist) (&*parser*, *banned types*)
+  - [nt_parser_set_whitelist](#nt_parser_set_whitelist) (&*parser*, *allowed types*)
+  - [nt_parser_set_userdata](#nt_parser_set_userdata) (&*parser*, &*userdata*)
+  - [nt_parser_set_callback](#nt_parser_set_callback) (&*parser*, &*callback*)
+
+* [Miscellaneous](#miscellaneous)
+  - [nt_type_code](#nt_type_code) (*type*) → `const char *`
+  - [nt_type_type](#nt_type_code) (*type*) → `NT_TYPE`
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L48-L88
 
 Specify the size of the integrated memory buffer of the `NT_PARSER` structure by
 defining the `NT_PARSER_NCOUNT` macro before including the `nt4c.h` header. The
@@ -162,6 +180,21 @@ the size of the input document is always known to be small (see
 [ex_pretty](examples/src/ex_pretty.c)).
 
 https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L41-L43
+
+
+#### Initialization ############################################################
+
+##### nt_make_parser ###########################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L114-L116
+
+Examples:
+[ex_echo](https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_echo.c#L24)
+
+
+##### nt_parser_init ###########################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L118-L122
 
 
 #### Parsing ###################################################################
@@ -180,6 +213,62 @@ https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4
 
 Examples:
 [ex_echo](https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_echo.c#L28)
+
+
+#### Configuration #############################################################
+
+##### nt_parser_set_memory #################################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L136-L143
+
+Examples:
+[ex_echo](https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_echo.c#L26)
+
+
+##### nt_parser_set_recursion ##################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L145-L150
+
+
+##### nt_parser_set_blacklist ##################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L152-L158
+
+Examples:
+[ex_pretty](https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_pretty.c#L72)
+
+
+##### nt_parser_set_whitelist ##################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L160-L166
+
+
+##### nt_parser_set_userdata ###################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L168-L174
+
+
+##### nt_parser_set_callback ###################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L176-L182
+
+
+#### Miscellaneous #############################################################
+
+##### nt_type_code #############################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L184-L189
+
+Examples:
+[ex_callback](https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_callback.c#L15)
+
+
+##### nt_type_type #############################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L191-L195
+
+Examples:
+[ex_callback](https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_callback.c#L12)
 
 
 # License ######################################################################
