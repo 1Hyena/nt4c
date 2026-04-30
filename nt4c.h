@@ -75,7 +75,16 @@ typedef enum : uint32_t {
     NT_NEWLINE      = 1 << 24,  // node references the new line data
     NT_SPACE        = 1 << 25,  // node references the (indentation) spaces
     NT_INVALID      = 1 << 26,  // node references a segment of invalid input
-    NT_DEEP         = 1 << 27   // node that exceeds the maximum nesting depth
+    NT_DEEP         = 1 << 27,  // node that exceeds the maximum nesting depth
+    NT_TOP          = NT_TOP_NIL|NT_TOP_LST|NT_TOP_MLS|NT_TOP_DCT,
+    NT_TAG_LST      = (
+                        NT_TAG_LST_ROL|NT_TAG_LST_MLS|NT_TAG_LST_LST|
+                        NT_TAG_LST_DCT|NT_TAG_LST_NIL
+                    ),
+    NT_KEY          = NT_KEY_ROL|NT_KEY_MLS|NT_KEY_LST|NT_KEY_DCT|NT_KEY_NIL,
+    NT_SET          = NT_SET_MLS|NT_SET_DCT|NT_SET_LST|NT_SET_ROL|NT_SET_NIL,
+    NT_STR          = NT_STR_MLN|NT_STR_ROL
+
 } NT_TYPE;
 
 typedef int (*NT_CALLBACK) (
@@ -179,11 +188,10 @@ static const char *                     nt_type_code(
     // enumeration.
 );
 
-static const char *                     nt_type_name(
+static NT_TYPE                          nt_type_type(
     NT_TYPE                                 node_type
 
-    // Returns the name of the given node type or a group of node types as a
-    // null-terminated string.
+    // Returns the group type of the given node type or a group of node types.
 );
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -346,47 +354,55 @@ static inline const char *nt_type_code(NT_TYPE type) {
         case NT_SET_ROL:        return "SET_ROL";
         case NT_SET_NIL:        return "SET_NIL";
         case NT_TAG_MLS:        return "TAG_MLS";
+        case NT_TOP:            return "TOP";
+        case NT_TAG_LST:        return "TAG_LST";
+        case NT_KEY:            return "KEY";
+        case NT_SET:            return "SET";
+        case NT_STR:            return "STR";
     }
 
     return "???";
 }
 
-static inline const char *nt_type_name(NT_TYPE type) {
-    auto val = 1 << stdc_trailing_zeros_ul(type);
-
-    switch (val) {
-        case NT_NONE:           return "none";
+static inline NT_TYPE nt_type_type(NT_TYPE type) {
+    switch (type) {
+        case NT_NONE:           break;
         case NT_TOP_NIL:
         case NT_TOP_LST:
         case NT_TOP_MLS:
-        case NT_TOP_DCT:        return "root";
-        case NT_INVALID:        return "invalid";
-        case NT_DEEP:           return "deep";
-        case NT_STR_COM:        return "comment";
-        case NT_TAG_COM:        return "comment-tag";
-        case NT_TAG_MLS:        return "string-tag";
+        case NT_TOP_DCT:        return NT_TOP;
         case NT_TAG_LST_ROL:
         case NT_TAG_LST_MLS:
         case NT_TAG_LST_LST:
         case NT_TAG_LST_DCT:
-        case NT_TAG_LST_NIL:    return "list-item";
+        case NT_TAG_LST_NIL:    return NT_TAG_LST;
         case NT_KEY_ROL:
         case NT_KEY_MLS:
         case NT_KEY_LST:
         case NT_KEY_DCT:
-        case NT_KEY_NIL:        return "key";
-        case NT_STR_ROL:
-        case NT_STR_MLN:        return "string";
-        case NT_NEWLINE:        return "newline";
-        case NT_SPACE:          return "space";
+        case NT_KEY_NIL:        return NT_KEY;
         case NT_SET_MLS:
         case NT_SET_DCT:
         case NT_SET_LST:
         case NT_SET_ROL:
-        case NT_SET_NIL:        return "assignment";
+        case NT_SET_NIL:        return NT_SET;
+        case NT_STR_ROL:
+        case NT_STR_MLN:        return NT_STR;
+        case NT_INVALID:
+        case NT_DEEP:
+        case NT_TAG_COM:
+        case NT_STR_COM:
+        case NT_NEWLINE:
+        case NT_SPACE:
+        case NT_TAG_MLS:
+        case NT_TOP:
+        case NT_TAG_LST:
+        case NT_STR:
+        case NT_KEY:
+        case NT_SET:            return type;
     }
 
-    return "???";
+    return NT_NONE;
 }
 
 static inline int nt_parse(

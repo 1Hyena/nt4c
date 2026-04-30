@@ -38,7 +38,7 @@ standard of the C programming language. It includes the following features:
   simple API that includes a few key functions, primarily `nt_parse()`.
 
 * **Callbacks:** NT4C parses the entire document and calls a callback function
-  provided by the application to inform it about each nestedtext unit.
+  provided by the application to inform it about each NestedText unit.
 
 * **Tree model:** If sufficient memory is provided to the NT4C parser, it
   constructs a graph where each node directly references a segment from the

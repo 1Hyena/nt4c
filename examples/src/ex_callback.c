@@ -9,12 +9,14 @@ static int callback(NT_TYPE t, const char *str, size_t size, void *, size_t d) {
         printf("%s", "    ");
     }
 
+    t = nt_type_type(t); // Let's only print the type codes of node groups.
+
     if (t == NT_NEWLINE) {
-        printf("%s (depth %lu)\n", nt_type_name(t), d);
+        printf("%s (depth %lu)\n", nt_type_code(t), d);
     }
     else {
         printf(
-            "%s => [%.*s] (depth %lu)\n", nt_type_name(t), (int) size, str, d
+            "%s => [%.*s] (depth %lu)\n", nt_type_code(t), (int) size, str, d
         );
     }
 
