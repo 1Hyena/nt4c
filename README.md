@@ -92,7 +92,7 @@ capacity.
 The [ex_hello](examples/src/ex_hello.c) example demonstrates how to use the NT4C
 parser to generate the text "hello world" and display it on the screen.
 
-https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_hello.c#L6-L12
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_hello.c#L6-L15
 
 ![screenshot](img/ex_hello.png "console output of ex_hello")
 
@@ -151,17 +151,35 @@ Here is a screenshot showing the structure of the parsed NestedText document:
 
 ### API ########################################################################
 
-https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L76-L81
-
-https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L42-L73
-
 Specify the size of the integrated memory buffer of the `NT_PARSER` structure by
 defining the `NT_PARSER_NCOUNT` macro before including the `nt4c.h` header. The
 integrated memory was added to increase the API usage convenience in cases where
 the size of the input document is always known to be small (see
-[ex_hello](examples/src/ex_hello.c) and [ex_pretty](examples/src/ex_pretty.c)).
+[ex_pretty](examples/src/ex_pretty.c)).
 
-https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L35-L37
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L41-L43
+
+* [Parsing](#parsing)
+  - [nt_parse](#nt_parse) (*text*, *text size*, *callback*, *userdata*) → `int`
+  - [nt_parser_parse](#nt_parser_parse) (&*parser*, *text*, *text size*) → `int`
+
+
+#### Parsing ###################################################################
+
+##### nt_parse #################################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L99-L112
+
+Examples:
+[ex_hello](https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_hello.c#L12)
+
+
+##### nt_parser_parse ##########################################################
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L124-L134
+
+Examples:
+[ex_hello](https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_echo.c#L28)
 
 
 # License ######################################################################
