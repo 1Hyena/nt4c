@@ -10,10 +10,12 @@ static int callback(NT_TYPE t, const char *str, size_t size, void *, size_t d) {
     }
 
     if (t == NT_NEWLINE) {
-        printf("%s (depth %lu)\n", nt_name(t), d);
+        printf("%s (depth %lu)\n", nt_type_name(t), d);
     }
     else {
-        printf("%s => [%.*s] (depth %lu)\n", nt_name(t), (int) size, str, d);
+        printf(
+            "%s => [%.*s] (depth %lu)\n", nt_type_name(t), (int) size, str, d
+        );
     }
 
     return 0;
@@ -28,9 +30,7 @@ int main(int, char **) {
         return EXIT_FAILURE;
     }
 
-    NT_PARSER parser = { .callback = { .on_text = callback } };
-
-    nt_parse(input_data, input_size, &parser);
+    nt_parse(input_data, input_size, callback, nullptr);
 
     return free_and_return(input_data, EXIT_SUCCESS);
 }

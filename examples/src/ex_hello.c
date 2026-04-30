@@ -9,8 +9,7 @@ static int callback(NT_TYPE, const char *text, size_t size, void *, size_t) {
 }
 
 int main(int, char **) {
-    NT_PARSER parser = { .callback = { .on_text = callback } };
-    nt_parse("hello world", 0, &parser);
+    nt_parse("hello world", 0, callback, nullptr);
 
     return EXIT_SUCCESS;
 }

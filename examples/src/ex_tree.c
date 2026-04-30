@@ -42,7 +42,7 @@ static void print_tree(NT_NODE *node, size_t depth) {
 
     const char *suffix = "\x1b[0m";
 
-    printf("%s%s%s", prefix, nt_code(node->type), suffix);
+    printf("%s%s%s", prefix, nt_type_code(node->type), suffix);
 
     if (node->data) {
         if (node->type == NT_SPACE) {
@@ -84,11 +84,11 @@ int main(int, char **) {
 
     constexpr size_t node_count = 200;
     NT_NODE nodes[node_count];
-    NT_PARSER parser = {};
+    NT_PARSER parser = nt_make_parser();
 
     nt_parser_set_memory(&parser, nodes, node_count);
 
-    int result = nt_parse(input_data, input_size, &parser);
+    int result = nt_parser_parse(&parser, input_data, input_size);
 
     if (result > (int) node_count) {
         fprintf(stderr, "not enough memory for %lu nodes\n", parser.doc.length);

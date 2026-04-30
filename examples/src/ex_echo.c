@@ -13,7 +13,7 @@ int main(int, char **) {
         return EXIT_FAILURE;
     }
 
-    int node_count = nt_parse(input_data, input_size, nullptr);
+    int node_count = nt_parse(input_data, input_size, nullptr, nullptr);
 
     if (node_count <= 0) {
         fprintf(stderr, "%s\n", "parse error");
@@ -21,11 +21,11 @@ int main(int, char **) {
     }
 
     NT_NODE nodes[node_count];
-    NT_PARSER parser = {};
+    NT_PARSER parser = nt_make_parser();
 
     nt_parser_set_memory(&parser, nodes, sizeof(nodes)/sizeof(nodes[0]));
 
-    if (nt_parse(input_data, input_size, &parser) > (int) node_count) {
+    if (nt_parser_parse(&parser, input_data, input_size) > (int) node_count) {
         fprintf(stderr, "not enough memory for %lu nodes\n", parser.doc.length);
 
         return free_and_return(input_data, EXIT_FAILURE);

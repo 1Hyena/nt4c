@@ -37,8 +37,12 @@ standard of the C programming language. It includes the following features:
 * **Embedding:** The NT4C parser is easily reusable in other projects with a
   simple API that includes a few key functions, primarily `nt_parse()`.
 
-* **Tree model:** NT4C parses the entire document and constructs a graph (DOM)
-  where each node directly references a segment from the input string.
+* **Callbacks:** NT4C parses the entire document and calls a callback function
+  provided by the application to inform it about each nestedtext unit.
+
+* **Tree model:** If sufficient memory is provided to the NT4C parser, it
+  constructs a graph where each node directly references a segment from the
+  input text.
 
 * **Portability:** NT4C builds and functions on Linux. It should be relatively
   simple to make it run on most other platforms as long as the platform provides
@@ -58,41 +62,27 @@ To parse a NestedText document, you can include the [nt4c.h](nt4c.h) header file
 directly in your codebase. The parser is implemented in a single C header file
 for easy integration.
 
-The main function to use is `nt_parse()`, which takes a text in NestedText
-syntax and a pointer to the `NT_PARSER` structure for customizing the
-deserialization process.
+The main functions to use are `nt_parse()` and `nt_parser_parse()`. The former
+is a convenience function for simple callback based parsing whereas the latter
+takes a pointer to the `NT_PARSER` structure as its first argument and is to be
+used for customized parsing.
 
 The `NT_PARSER` structure stores parsing configuration and the parsing process
 state. By default, it can handle up to `NT_PARSER_NCOUNT` nodes in its internal
 memory. However, you can use the `nt_parser_set_memory` function to work with a
 custom array of `NT_NODE` structures.
 
-When you call `nt_parse()`, the parser populates the deserialization graph of
-the document with nodes. It continues processing even if the output buffer
-reaches its capacity.
+When you call `nt_parser_parse()`, the parser populates the document graph with
+nodes. It continues processing even if the output buffer reaches its capacity.
 
-After a successful parsing operation, `nt_parse()` returns the number of nodes
-in the input text. This information can help you determine the memory required
-for storing the deserialization graph. If parsing fails, the function returns a
-negative value.
+After a successful parsing operation, both `nt_parse()` and `nt_parser_parse()`
+return the number of nodes in the input text. This information can help you to
+determine the memory required for storing the full graph of the document. If
+parsing fails, the function returns a negative value.
 
-The deserialization graph is considered fully stored when the value returned by
-`nt_parse()` is non-negative and does not exceed the output buffer's capacity.
-
-
-### API ########################################################################
-
-https://github.com/1Hyena/nt4c/blob/acc5fe1d535e66a7bd24b6def2de34ba2521d3c2/nt4c.h#L76-L81
-
-https://github.com/1Hyena/nt4c/blob/acc5fe1d535e66a7bd24b6def2de34ba2521d3c2/nt4c.h#L42-L73
-
-Specify the size of the integrated memory buffer of the `NT_PARSER` structure by
-defining the `NT_PARSER_NCOUNT` macro before including the `nt4c.h` header. The
-integrated memory was added to increase the API usage convenience in cases where
-the size of the input document is always known to be small (see
-[ex_hello](examples/src/ex_hello.c) and [ex_pretty](examples/src/ex_pretty.c)).
-
-https://github.com/1Hyena/nt4c/blob/acc5fe1d535e66a7bd24b6def2de34ba2521d3c2/nt4c.h#L35-L37
+The graph of the document is considered fully stored when the value returned by
+`nt_parser_parse()` is non-negative and does not exceed the output buffer's
+capacity.
 
 
 ### Examples ###################################################################
@@ -146,6 +136,21 @@ https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/exa
 Here is a screenshot showing the structure of the parsed NestedText document:
 
 ![screenshot](img/ex_tree.png "console output of ex_tree")
+
+
+### API ########################################################################
+
+https://github.com/1Hyena/nt4c/blob/acc5fe1d535e66a7bd24b6def2de34ba2521d3c2/nt4c.h#L76-L81
+
+https://github.com/1Hyena/nt4c/blob/acc5fe1d535e66a7bd24b6def2de34ba2521d3c2/nt4c.h#L42-L73
+
+Specify the size of the integrated memory buffer of the `NT_PARSER` structure by
+defining the `NT_PARSER_NCOUNT` macro before including the `nt4c.h` header. The
+integrated memory was added to increase the API usage convenience in cases where
+the size of the input document is always known to be small (see
+[ex_hello](examples/src/ex_hello.c) and [ex_pretty](examples/src/ex_pretty.c)).
+
+https://github.com/1Hyena/nt4c/blob/acc5fe1d535e66a7bd24b6def2de34ba2521d3c2/nt4c.h#L35-L37
 
 
 # License ######################################################################

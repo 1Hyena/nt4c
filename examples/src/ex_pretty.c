@@ -68,9 +68,10 @@ int main(int, char **) {
         return EXIT_FAILURE;
     }
 
-    NT_PARSER parser = { .settings = { .blacklist = NT_SPACE|NT_NEWLINE } };
+    NT_PARSER parser = nt_make_parser();
+    nt_parser_set_blacklist(&parser, NT_SPACE|NT_NEWLINE);
 
-    if (nt_parse(input_data, 0, &parser) > (int) parser.mem.capacity) {
+    if (nt_parser_parse(&parser, input_data, 0) > (int) parser.mem.capacity) {
         fprintf(stderr, "not enough memory for %lu nodes\n", parser.doc.length);
         return free_and_return(input_data, EXIT_FAILURE);
     }

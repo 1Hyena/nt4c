@@ -36,10 +36,10 @@
 #define NT4C_MAJOR_VERSION  1
 #define NT4C_MINOR_VERSION  0
 #define NT4C_REVISION       0
-#define NT4C_VERSION        "1.0.1"
+#define NT4C_VERSION        "1.0.2"
 
 #ifndef NT_PARSER_NCOUNT
-#define NT_PARSER_NCOUNT 8
+#define NT_PARSER_NCOUNT 1
 #endif
 
 typedef struct NT_NODE      NT_NODE;
@@ -78,15 +78,113 @@ typedef enum : uint32_t {
     NT_DEEP         = 1 << 27   // node that exceeds the maximum nesting depth
 } NT_TYPE;
 
+typedef int (*NT_CALLBACK) (
+    NT_TYPE     node_type,
+    const char *text_segment,
+    size_t      text_segment_size,
+    void *      userdata,
+    size_t      depth
+);
+
 // Public API: /////////////////////////////////////////////////////////////////
-static int          nt_parse(const char *text, size_t text_size, NT_PARSER *);
-static void         nt_parser_set_memory(NT_PARSER *, NT_NODE *, size_t ncount);
-static void         nt_parser_set_recursion(NT_PARSER *, size_t depth);
-static void         nt_parser_set_blacklist(NT_PARSER *, NT_TYPE blacklist);
-static void         nt_parser_set_whitelist(NT_PARSER *, NT_TYPE whitelist);
-static void         nt_parser_set_userdata(NT_PARSER *, void *userdata);
-static const char * nt_code(NT_TYPE);
-static const char * nt_name(NT_TYPE);
+static int                              nt_parse(
+    const char *                            text,
+    size_t                                  text_size,
+    NT_CALLBACK                             on_text,
+    void *                                  userdata
+
+    // Parses the given text as a NestedText document of the given text size.
+    // If the callback function pointer argument is not a null pointer, then the
+    // callback function is called on each text segment of the input text and
+    // the userdata argument is simply passed on the the callback function.
+    //
+    // Returns the number of nodes in the input text or a negative value on
+    // error.
+);
+
+static NT_PARSER                        nt_make_parser(
+    // Returns a parser structure in its default state.
+);
+
+static void                             nt_parser_init(
+    NT_PARSER *                             parser
+
+    // Resets the provided parser to its default state.
+);
+
+static int                              nt_parser_parse(
+    NT_PARSER *                             parser,
+    const char *                            text,
+    size_t                                  text_size
+
+    // Parses the given text as a NestedText document of the given text size
+    // using the parsing configuration stored in the provided parser structure.
+    //
+    // Returns the number of nodes in the input text or a negative value on
+    // error.
+);
+
+static void                             nt_parser_set_memory(
+    NT_PARSER *                             parser,
+    NT_NODE *                               nodes,
+    size_t                                  node_count
+
+    // Sets the memory region used for the storage of the document object model
+    // by the given parser.
+);
+
+static void                             nt_parser_set_recursion(
+    NT_PARSER *                             parser,
+    size_t                                  depth
+
+    // Sets the maximum allowed recursion depth of the given parser.
+);
+
+static void                             nt_parser_set_blacklist(
+    NT_PARSER *                             parser,
+    NT_TYPE                                 blacklist
+
+    // Sets the node types to be ignored by the given parser when parsing
+    // NestedText documents.
+);
+
+static void                             nt_parser_set_whitelist(
+    NT_PARSER *                             parser,
+    NT_TYPE                                 whitelist
+
+    // Sets the node types accepted by the given parser when parsing NestedText
+    // documents.
+);
+
+static void                             nt_parser_set_userdata(
+    NT_PARSER *                             parser,
+    void *                                  userdata
+
+    // Sets the userdata pointer to be passed on to the callback function by the
+    // given parser when parsing NestedText documents.
+);
+
+static void                             nt_parser_set_callback(
+    NT_PARSER *                             parser,
+    NT_CALLBACK                             callback
+
+    // Sets the callback function to be called by the given parser when parsing
+    // NestedText documents.
+);
+
+static const char *                     nt_type_code(
+    NT_TYPE                                 node_type
+
+    // Returns the null-terminated string representation of the given node type
+    // enumeration.
+);
+
+static const char *                     nt_type_name(
+    NT_TYPE                                 node_type
+
+    // Returns the name of the given node type or a group of node types as a
+    // null-terminated string.
+);
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef struct NT_NODE {
@@ -101,11 +199,11 @@ typedef struct NT_NODE {
 
 typedef struct NT_PARSER {
     struct {
-        // Caller-provided one-pass querying callbacks.
+        // Caller-provided one-pass querying callback.
         //
-        // The last argument of all callbacks, 'userdata', is just propagated
-        // from the userdata member of the NT_PARSER structure and is available
-        // for any use by the application.
+        // The last argument of the callback function, 'userdata', is just
+        // propagated from the callback userdata member of the NT_PARSER
+        // structure and is available for any use by the application.
         //
         // Note any strings provided to the callbacks as their arguments or as
         // members of any detail structure are generally not zero-terminated.
@@ -114,14 +212,7 @@ typedef struct NT_PARSER {
         // Any callback may abort further parsing of the document by returning
         // non-zero.
 
-        int (*on_text) (
-            NT_TYPE,        // Nest type
-            const char *,   // Nest text
-            size_t,         // Nest text size in bytes
-            void *,         // Userdata
-            size_t          // Nest depth
-        );
-
+        NT_CALLBACK function;
         void *userdata;
     } callback;
 
@@ -220,7 +311,11 @@ static inline void nt_parser_set_userdata(NT_PARSER *parser, void *userdata) {
     parser->callback.userdata = userdata;
 }
 
-static inline const char *nt_code(NT_TYPE type) {
+static inline void nt_parser_set_callback(NT_PARSER *parser, NT_CALLBACK fun) {
+    parser->callback.function = fun;
+}
+
+static inline const char *nt_type_code(NT_TYPE type) {
     switch (type) {
         case NT_NONE:           return "NONE";
         case NT_TOP_NIL:        return "TOP_NIL";
@@ -256,7 +351,7 @@ static inline const char *nt_code(NT_TYPE type) {
     return "???";
 }
 
-static inline const char *nt_name(NT_TYPE type) {
+static inline const char *nt_type_name(NT_TYPE type) {
     auto val = 1 << stdc_trailing_zeros_ul(type);
 
     switch (val) {
@@ -294,7 +389,30 @@ static inline const char *nt_name(NT_TYPE type) {
     return "???";
 }
 
-static inline int nt_parse(const char *str, size_t str_sz, NT_PARSER *parser) {
+static inline int nt_parse(
+    const char *text, size_t text_size, NT_CALLBACK callback, void *userdata
+) {
+    NT_PARSER parser = {};
+
+    nt_parser_set_callback(&parser, callback);
+    nt_parser_set_userdata(&parser, userdata);
+
+    return nt_parser_parse(&parser, text, text_size);
+}
+
+static inline NT_PARSER nt_make_parser() {
+    NT_PARSER parser;
+    nt_parser_init(&parser);
+    return parser;
+}
+
+static inline void nt_parser_init(NT_PARSER *parser) {
+    *parser = (NT_PARSER) {};
+}
+
+static inline int nt_parser_parse(
+    NT_PARSER *parser, const char *str, size_t str_sz
+) {
     constexpr NT_TYPE top_collections = (
         NT_TOP_DCT | NT_TOP_LST | NT_TOP_MLS | NT_TOP_NIL
     );
@@ -982,7 +1100,7 @@ static NT_NODE *nt4c_parser_create_node_type(NT_PARSER *parser, NT_TYPE type) {
 static int nt4c_parser_record(
     NT_PARSER *parser, NT_NODE *parent, NT_UNIT u, size_t depth
 ) {
-    if (nt4c_parser_on_text(parser, u.type, u.data, u.size, depth) < 0) {
+    if (nt4c_parser_on_text(parser, u.type, u.data, u.size, depth) != 0) {
         return -1; // Callback error.
     }
 
@@ -1000,11 +1118,11 @@ static int nt4c_parser_on_text(
     const NT_PARSER *parser,
     NT_TYPE type, const char *text, size_t size, size_t depth
 ) {
-    if (parser->callback.on_text == nullptr) {
+    if (parser->callback.function == nullptr) {
         return 0;
     }
 
-    return parser->callback.on_text(
+    return parser->callback.function(
         type, text, size, parser->callback.userdata, depth
     );
 }
