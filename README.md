@@ -92,9 +92,20 @@ capacity.
 The [ex_hello](examples/src/ex_hello.c) example demonstrates how to use the NT4C
 parser to generate the text "hello world" and display it on the screen.
 
-https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_hello.c#L5-L15
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_hello.c#L6-L12
 
 ![screenshot](img/ex_hello.png "console output of ex_hello")
+
+
+#### ex_callback ###############################################################
+
+The [ex_callback](examples/src/ex_callback.c) example demonstrates how to make
+the NT4C parser call a user-specified function each time it parses the next
+logical portion of the input document.
+
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_callback.c#L7-L38
+
+![screenshot](img/ex_callback.png "console output of ex_callback")
 
 
 #### ex_echo ###################################################################
@@ -105,7 +116,7 @@ document undergoes parsing twice. Initially, the length of the document is
 calculated. Subsequently, a variable-length array is set up to store the
 Document Object Model (DOM).
 
-https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_echo.c#L10-L34
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_echo.c#L23-L36
 
 ![screenshot](img/ex_echo.png "console output of ex_echo")
 
@@ -116,7 +127,7 @@ https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/exa
 pretty-print a NestedText document. It reformats the input text and adds syntax
 highlighting.
 
-https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_pretty.c#L65-L74
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_pretty.c#L71-L77
 
 Here is a NestedText document before and after pretty-printing, as shown in the
 screenshot below:
@@ -131,7 +142,7 @@ https://github.com/1Hyena/nt4c/blob/934ab23c1fcf461df2cfb57dfc8e114004588a48/exa
 [This example](examples/src/ex_tree.c) shows how to use the NT4C parser to print
 the structure of a NestedText document on the screen.
 
-https://github.com/1Hyena/nt4c/blob/1f8595884201722495c089d4b45086a23465b84a/examples/src/ex_tree.c#L79-L97
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_tree.c#L85-L99
 
 Here is a screenshot showing the structure of the parsed NestedText document:
 
@@ -140,9 +151,9 @@ Here is a screenshot showing the structure of the parsed NestedText document:
 
 ### API ########################################################################
 
-https://github.com/1Hyena/nt4c/blob/acc5fe1d535e66a7bd24b6def2de34ba2521d3c2/nt4c.h#L76-L81
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L76-L81
 
-https://github.com/1Hyena/nt4c/blob/acc5fe1d535e66a7bd24b6def2de34ba2521d3c2/nt4c.h#L42-L73
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L42-L73
 
 Specify the size of the integrated memory buffer of the `NT_PARSER` structure by
 defining the `NT_PARSER_NCOUNT` macro before including the `nt4c.h` header. The
@@ -150,7 +161,7 @@ integrated memory was added to increase the API usage convenience in cases where
 the size of the input document is always known to be small (see
 [ex_hello](examples/src/ex_hello.c) and [ex_pretty](examples/src/ex_pretty.c)).
 
-https://github.com/1Hyena/nt4c/blob/acc5fe1d535e66a7bd24b6def2de34ba2521d3c2/nt4c.h#L35-L37
+https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L35-L37
 
 
 # License ######################################################################
