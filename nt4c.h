@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdint.h>
-#include <stdbit.h>
+
 
 #define NT4C_MAJOR_VERSION  1
 #define NT4C_MINOR_VERSION  0
