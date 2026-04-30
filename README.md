@@ -179,7 +179,7 @@ Examples:
 https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/nt4c.h#L124-L134
 
 Examples:
-[ex_hello](https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_echo.c#L28)
+[ex_echo](https://github.com/1Hyena/nt4c/blob/6be27c3c5f8718973c914c06efca7cc39ebe235e/examples/src/ex_echo.c#L28)
 
 
 # License ######################################################################
