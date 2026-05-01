@@ -88,77 +88,77 @@ capacity.
 
 ### Examples ###################################################################
 
-#### ex_hello ##################################################################
+#### exhello ###################################################################
 
-The [ex_hello](examples/src/ex_hello.c) example demonstrates how to use the NT4C
+The [exhello](examples/src/exhello.c) example demonstrates how to use the NT4C
 parser to generate the text "hello world" and display it on the screen.
 
-https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_hello.c#L6-L15
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/exhello.c#L6-L15
 
-![screenshot](img/ex_hello.png "console output of ex_hello")
+![screenshot](img/exhello.png "console output of exhello")
 
 
-#### ex_callback ###############################################################
+#### excallback ################################################################
 
-The [ex_callback](examples/src/ex_callback.c) example demonstrates how to make
+The [excallback](examples/src/excallback.c) example demonstrates how to make
 the NT4C parser call a user-specified function each time it parses the next
 logical portion of the input document.
 
-https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_callback.c#L7-L38
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/excallback.c#L7-L38
 
-![screenshot](img/ex_callback.png "console output of ex_callback")
+![screenshot](img/excallback.png "console output of excallback")
 
 
-#### ex_echo ###################################################################
+#### execho ####################################################################
 
-[This example](examples/src/ex_echo.c) demonstrates how to utilize the NT4C
+[This example](examples/src/execho.c) demonstrates how to utilize the NT4C
 parser to parse and display a NestedText document on the screen. The input
 document undergoes parsing twice. Initially, the length of the document is
 calculated. Subsequently, a variable-length array is set up to store the
 Document Object Model (DOM).
 
-https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_echo.c#L23-L36
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/execho.c#L23-L36
 
-![screenshot](img/ex_echo.png "console output of ex_echo")
+![screenshot](img/execho.png "console output of execho")
 
 
-#### ex_pretty #################################################################
+#### expretty ##################################################################
 
-[This example](examples/src/ex_pretty.c) shows how to use the NT4C parser to
+[This example](examples/src/expretty.c) shows how to use the NT4C parser to
 pretty-print a NestedText document. It reformats the input text and adds syntax
 highlighting.
 
-https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_pretty.c#L71-L77
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/expretty.c#L71-L77
 
 Here is a NestedText document before and after pretty-printing, as shown in the
 screenshot below:
 
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/ugly.nt#L1-L29
 
-![screenshot](img/ex_pretty.png "console output of ex_pretty")
+![screenshot](img/expretty.png "console output of expretty")
 
 
-#### ex_tree ###################################################################
+#### extree ####################################################################
 
-[This example](examples/src/ex_tree.c) shows how to use the NT4C parser to print
+[This example](examples/src/extree.c) shows how to use the NT4C parser to print
 the structure of a NestedText document on the screen.
 
-https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_tree.c#L85-L99
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/extree.c#L85-L99
 
 Here is a screenshot showing the structure of the parsed NestedText document:
 
-![screenshot](img/ex_tree.png "console output of ex_tree")
+![screenshot](img/extree.png "console output of extree")
 
 
-#### ex_query ##################################################################
+#### exquery ###################################################################
 
-The [ex_query](examples/src/ex_query.c) example demonstrates how to query an
+The [exquery](examples/src/exquery.c) example demonstrates how to query an
 arbitrary NestedText document for a specific key and print the contents of the
 matching node on screen.
 
-https://github.com/1Hyena/nt4c/blob/b0cb4ffabba978fe5b7598df510504a08d651bfc/examples/repository.nt#L1-L21
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/repository.nt#L1-L21
 
-![screenshot](img/ex_query.png "console output of ex_query")
+![screenshot](img/exquery.png "console output of exquery")
 
 
 ### API ########################################################################
@@ -189,7 +189,7 @@ Specify the size of the integrated memory buffer of the `NT_PARSER` structure by
 defining the `NT_PARSER_NCOUNT` macro before including the `nt4c.h` header. The
 integrated memory was added to increase the API usage convenience in cases where
 the size of the input document is always known to be small (see
-[ex_pretty](examples/src/ex_pretty.c)).
+[expretty](examples/src/expretty.c)).
 
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L41-L43
 
@@ -201,7 +201,10 @@ https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L114-L116
 
 Examples:
-[ex_echo](https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_echo.c#L24)
+[execho](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/execho.c#L23),
+[expretty](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/expretty.c#L70),
+[exquery](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/exquery.c#L35),
+[extree](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/extree.c#L86)
 
 
 ##### nt_parser_init ###########################################################
@@ -216,7 +219,9 @@ https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L99-L112
 
 Examples:
-[ex_hello](https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_hello.c#L12)
+[excallback](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/excallback.c#L34),
+[execho](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/execho.c#L15),
+[exhello](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/exhello.c#L12)
 
 
 ##### nt_parser_parse ##########################################################
@@ -224,17 +229,20 @@ Examples:
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L124-L134
 
 Examples:
-[ex_echo](https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_echo.c#L28)
-
+[execho](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/execho.c#L27)
+[expretty](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/expretty.c#L73),
+[exquery](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/exquery.c#L40),
+[extree](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/extree.c#L90)
 
 #### Configuration #############################################################
 
-##### nt_parser_set_memory #################################################################
+##### nt_parser_set_memory #####################################################
 
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L136-L143
 
 Examples:
-[ex_echo](https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_echo.c#L26)
+[execho](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/execho.c#L25),
+[extree](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/extree.c#L88)
 
 
 ##### nt_parser_set_recursion ##################################################
@@ -247,7 +255,8 @@ https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L152-L158
 
 Examples:
-[ex_pretty](https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_pretty.c#L72)
+[expretty](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/expretty.c#L71),
+[exquery](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/exquery.c#L39)
 
 
 ##### nt_parser_set_whitelist ##################################################
@@ -260,12 +269,15 @@ https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L168-L174
 
 Examples:
-[ex_query](https://github.com/1Hyena/nt4c/blob/3f37a98a65415d91b73453160f30d28ebbc91a55/examples/src/ex_query.c#L38)
+[exquery](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/exquery.c#L38)
 
 
 ##### nt_parser_set_callback ###################################################
 
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L176-L182
+
+Examples:
+[exquery](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/exquery.c#L37)
 
 
 #### Miscellaneous #############################################################
@@ -275,7 +287,8 @@ https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L184-L189
 
 Examples:
-[ex_callback](https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_callback.c#L15)
+[excallback](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/excallback.c#L14),
+[extree](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/extree.c#L44)
 
 
 ##### nt_type_type #############################################################
@@ -283,7 +296,9 @@ Examples:
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L191-L195
 
 Examples:
-[ex_callback](https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/examples/src/ex_callback.c#L12)
+[excallback](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/excallback.c#L11),
+[exquery](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/exquery.c#L51),
+[extree](https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/extree.c#L47)
 
 
 # License ######################################################################

@@ -9,6 +9,7 @@ OUT_DIR = bin
 
 SRC_FILES := $(wildcard $(SRC_DIR)/*.c)
 OUT_FILES := $(patsubst $(SRC_DIR)/%.c,%,$(SRC_FILES))
+OUT_PATHS := $(patsubst $(SRC_DIR)/%.c,$(OUT_DIR)/%,$(SRC_FILES))
 
 all:
 	@$(MAKE) verbose -s
@@ -27,5 +28,5 @@ $(OUT_FILES): %: $(SRC_DIR)/%.c
 
 clean:
 	@printf "\033[1;36mCleaning \033[37m ...."
-	@rm -f $(OUT_FILES)
+	@rm -f $(OUT_PATHS)
 	@printf "\033[1;37m Binaries cleaned!\033[0m\n"
