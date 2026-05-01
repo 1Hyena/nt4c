@@ -156,6 +156,8 @@ The [ex_query](examples/src/ex_query.c) example demonstrates how to query an
 arbitrary NestedText document for a specific key and print the contents of the
 matching node on screen.
 
+https://github.com/1Hyena/nt4c/blob/b0cb4ffabba978fe5b7598df510504a08d651bfc/examples/repository.nt
+
 ![screenshot](img/ex_query.png "console output of ex_query")
 
 
