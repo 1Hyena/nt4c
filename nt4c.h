@@ -76,14 +76,13 @@ typedef enum : uint32_t {
     NT_SPACE        = 1 << 25,  // node references the (indentation) spaces
     NT_INVALID      = 1 << 26,  // node references a segment of invalid input
     NT_DEEP         = 1 << 27,  // node that exceeds the maximum nesting depth
-    NT_TOP          = NT_TOP_NIL|NT_TOP_LST|NT_TOP_MLS|NT_TOP_DCT,
-    NT_TAG_LST      = (
-                        NT_TAG_LST_ROL|NT_TAG_LST_MLS|NT_TAG_LST_LST|
-                        NT_TAG_LST_DCT|NT_TAG_LST_NIL
-                    ),
-    NT_KEY          = NT_KEY_ROL|NT_KEY_MLS|NT_KEY_LST|NT_KEY_DCT|NT_KEY_NIL,
-    NT_SET          = NT_SET_MLS|NT_SET_DCT|NT_SET_LST|NT_SET_ROL|NT_SET_NIL,
-    NT_STR          = NT_STR_MLN|NT_STR_ROL
+    ////////////////////////////////////////////////////////////////////////////
+    NT_TOP      =   NT_TOP_NIL|NT_TOP_LST|NT_TOP_MLS|NT_TOP_DCT,
+    NT_TAG_LST  =   NT_TAG_LST_ROL|NT_TAG_LST_MLS|NT_TAG_LST_LST|NT_TAG_LST_DCT|
+                    NT_TAG_LST_NIL,
+    NT_KEY      =   NT_KEY_ROL|NT_KEY_MLS|NT_KEY_LST|NT_KEY_DCT|NT_KEY_NIL,
+    NT_SET      =   NT_SET_MLS|NT_SET_DCT|NT_SET_LST|NT_SET_ROL|NT_SET_NIL,
+    NT_STR      =   NT_STR_MLN|NT_STR_ROL
 
 } NT_TYPE;
 
@@ -429,11 +428,9 @@ static inline void nt_parser_init(NT_PARSER *parser) {
 static inline int nt_parser_parse(
     NT_PARSER *parser, const char *str, size_t str_sz
 ) {
-    constexpr NT_TYPE top_collections = (
-        NT_TOP_DCT | NT_TOP_LST | NT_TOP_MLS | NT_TOP_NIL
-    );
+    constexpr NT_TYPE top_collections = NT_TOP;
 
-    NT_PARSER default_parser = {};
+    NT_PARSER default_parser = nt_make_parser();
 
     if (!parser) {
         parser = &default_parser;
@@ -526,16 +523,9 @@ static const char *nt4c_parser_deserialize(
     };
 
     constexpr struct any_collection_type any_collection = {
-        .keys = (
-            NT_KEY_MLS | NT_KEY_LST | NT_KEY_DCT | NT_KEY_ROL | NT_KEY_NIL
-        ),
-        .setters = (
-            NT_SET_MLS | NT_SET_LST | NT_SET_DCT | NT_SET_ROL | NT_SET_NIL
-        ),
-        .list_tags = (
-            NT_TAG_LST_MLS | NT_TAG_LST_LST | NT_TAG_LST_DCT |
-            NT_TAG_LST_ROL | NT_TAG_LST_NIL
-        )
+        .keys       = NT_KEY,
+        .setters    = NT_SET,
+        .list_tags  = NT_TAG_LST
     };
 
     size_t line_size;
