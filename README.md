@@ -259,6 +259,9 @@ https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4
 
 https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/nt4c.h#L168-L174
 
+Examples:
+[ex_query](https://github.com/1Hyena/nt4c/blob/3f37a98a65415d91b73453160f30d28ebbc91a55/examples/src/ex_query.c#L38)
+
 
 ##### nt_parser_set_callback ###################################################
 
