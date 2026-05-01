@@ -45,7 +45,7 @@ static void print_tree(NT_NODE *node, size_t depth) {
     printf("%s%s%s", prefix, nt_type_code(node->type), suffix);
 
     if (node->data) {
-        if (node->type == NT_SPACE) {
+        if (nt_type_type(node->type) == NT_SPACE) {
             printf("\x1b[0;1;30;3m, length %lu\x1b[0m", node->size);
         }
         else {

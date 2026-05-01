@@ -1,5 +1,6 @@
 # NT4C Readme ##################################################################
 
+* Version: 1.0.3 (01.05.2026)
 * Home: https://github.com/1Hyena/nt4c
 * Issue tracker: https://github.com/1Hyena/nt4c/issues
 
@@ -147,6 +148,15 @@ https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/exa
 Here is a screenshot showing the structure of the parsed NestedText document:
 
 ![screenshot](img/ex_tree.png "console output of ex_tree")
+
+
+#### ex_query ##################################################################
+
+The [ex_query](examples/src/ex_query.c) example demonstrates how to query an
+arbitrary NestedText document for a specific key and print the contents of the
+matching node on screen.
+
+![screenshot](img/ex_query.png "console output of ex_query")
 
 
 ### API ########################################################################

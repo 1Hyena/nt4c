@@ -1,6 +1,6 @@
-Name 1: Value 1
+Name 1 : Value 1
 Name 2:
-    Name 2a: Value 2a
+    Name 2a : Value 2a
     Name 2b: Value 2b
 Name 3:
     - Value 3a

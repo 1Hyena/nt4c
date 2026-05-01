@@ -1,4 +1,4 @@
-default repository: home
+default repository : home
 report style: tree
 compact format: {repo}: {size:{fmt}}.  Last back up: {last_create:ddd, MMM DD}.
 normal format: {host:<8} {user:<5} {config:<9} {size:<8.2b} {last_create:ddd, MMM DD}
