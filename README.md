@@ -93,7 +93,7 @@ capacity.
 The [exhello](examples/src/exhello.c) example demonstrates how to use the NT4C
 parser to generate the text "hello world" and display it on the screen.
 
-https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/exhello.c#L6-L15
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/exhello.c#L5-L14
 
 ![screenshot](img/exhello.png "console output of exhello")
 
@@ -104,7 +104,7 @@ The [excallback](examples/src/excallback.c) example demonstrates how to make
 the NT4C parser call a user-specified function each time it parses the next
 logical portion of the input document.
 
-https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/excallback.c#L7-L38
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/excallback.c#L6-L37
 
 ![screenshot](img/excallback.png "console output of excallback")
 
@@ -117,7 +117,7 @@ document undergoes parsing twice. Initially, the length of the document is
 calculated. Subsequently, a variable-length array is set up to store the
 Document Object Model (DOM).
 
-https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/execho.c#L23-L36
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/execho.c#L33-L35
 
 ![screenshot](img/execho.png "console output of execho")
 
@@ -128,7 +128,7 @@ https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/exa
 pretty-print a NestedText document. It reformats the input text and adds syntax
 highlighting.
 
-https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/expretty.c#L71-L77
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/expretty.c#L70-L78
 
 Here is a NestedText document before and after pretty-printing, as shown in the
 screenshot below:
@@ -143,7 +143,7 @@ https://github.com/1Hyena/nt4c/blob/490be860ff8b24ee01c52823063be50f85121d91/exa
 [This example](examples/src/extree.c) shows how to use the NT4C parser to print
 the structure of a NestedText document on the screen.
 
-https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/extree.c#L85-L99
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/src/extree.c#L84-L98
 
 Here is a screenshot showing the structure of the parsed NestedText document:
 
@@ -156,7 +156,7 @@ The [exquery](examples/src/exquery.c) example demonstrates how to query an
 arbitrary NestedText document for a specific key and print the contents of the
 matching node on screen.
 
-https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/repository.nt#L1-L21
+https://github.com/1Hyena/nt4c/blob/768d3bc2915f58566e447c1d79f21841d5d114e6/examples/repository.nt#L35-L40
 
 ![screenshot](img/exquery.png "console output of exquery")
 
