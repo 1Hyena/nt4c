@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 #include "../../nt4c.h"
-#include <stdlib.h>
 
 
 static int callback(NT_TYPE, const char *text, size_t size, void *, size_t) {

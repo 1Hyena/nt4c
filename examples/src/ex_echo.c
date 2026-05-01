@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "utils.h"
 #include "../../nt4c.h"
-#include <stdlib.h>
 
 
 int main(int, char **) {

@@ -2,7 +2,6 @@
 #include "utils.h"
 #define NT_PARSER_NCOUNT 64 // The ugly.nt document does not exceed this length.
 #include "../../nt4c.h"
-#include <stdlib.h>
 
 
 static int pretty_print(NT_NODE *node, size_t depth) {

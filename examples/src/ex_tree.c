@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 #include "utils.h"
 #include "../../nt4c.h"
-#include <stdlib.h>
 
 
 static void print_tree(NT_NODE *node, size_t depth) {
