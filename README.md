@@ -1,6 +1,6 @@
 # NT4C Readme ##################################################################
 
-* Version: 1.0.3 (01.05.2026)
+* Version: 1.0.4 (02.05.2026)
 * Home: https://github.com/1Hyena/nt4c
 * Issue tracker: https://github.com/1Hyena/nt4c/issues
 
