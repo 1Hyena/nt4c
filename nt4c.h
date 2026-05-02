@@ -114,7 +114,7 @@ static NT_PARSER                        nt_make_parser(
     // Returns a parser structure in its default state.
 );
 
-static void                             nt_parser_init(
+static void                             nt_parser_reset(
     NT_PARSER *                             parser
 
     // Resets the provided parser to its default state.
@@ -421,11 +421,11 @@ static inline int nt_parse(
 
 static inline NT_PARSER nt_make_parser() {
     NT_PARSER parser;
-    nt_parser_init(&parser);
+    nt_parser_reset(&parser);
     return parser;
 }
 
-static inline void nt_parser_init(NT_PARSER *parser) {
+static inline void nt_parser_reset(NT_PARSER *parser) {
     *parser = (NT_PARSER) {};
 }
 
