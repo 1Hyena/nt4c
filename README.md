@@ -198,7 +198,7 @@ https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4
 
 ##### nt_make_parser ###########################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L114-L116
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L113-L115
 
 Examples:
 [execho](https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/examples/src/execho.c#L23),
@@ -209,14 +209,14 @@ Examples:
 
 ##### nt_parser_init ###########################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L118-L122
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L117-L121
 
 
 #### Parsing ###################################################################
 
 ##### nt_parse #################################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L99-L112
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L98-L111
 
 Examples:
 [excallback](https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/examples/src/excallback.c#L34),
@@ -226,7 +226,7 @@ Examples:
 
 ##### nt_parser_parse ##########################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L124-L134
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L123-L133
 
 Examples:
 [execho](https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/examples/src/execho.c#L27)
@@ -238,7 +238,7 @@ Examples:
 
 ##### nt_parser_set_memory #####################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L136-L143
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L135-L142
 
 Examples:
 [execho](https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/examples/src/execho.c#L25),
@@ -247,12 +247,12 @@ Examples:
 
 ##### nt_parser_set_recursion ##################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L145-L150
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L144-L149
 
 
 ##### nt_parser_set_blacklist ##################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L152-L158
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L151-L157
 
 Examples:
 [expretty](https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/examples/src/expretty.c#L71),
@@ -261,12 +261,12 @@ Examples:
 
 ##### nt_parser_set_whitelist ##################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L160-L166
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L159-L165
 
 
 ##### nt_parser_set_userdata ###################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L168-L174
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L167-L173
 
 Examples:
 [exquery](https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/examples/src/exquery.c#L38)
@@ -274,7 +274,7 @@ Examples:
 
 ##### nt_parser_set_callback ###################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L176-L182
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L175-L181
 
 Examples:
 [exquery](https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/examples/src/exquery.c#L37)
@@ -284,7 +284,7 @@ Examples:
 
 ##### nt_type_code #############################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L184-L189
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L183-L188
 
 Examples:
 [excallback](https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/examples/src/excallback.c#L14),
@@ -293,7 +293,7 @@ Examples:
 
 ##### nt_type_type #############################################################
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L191-L195
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L190-L194
 
 Examples:
 [excallback](https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/examples/src/excallback.c#L11),
