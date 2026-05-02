@@ -229,7 +229,7 @@ Examples:
 https://github.com/1Hyena/nt4c/blob/5e5b8fc6b3a543ee4b085a57e493a36509f52f18/nt4c.h#L123-L133
 
 Examples:
-[execho](https://github.com/1Hyena/nt4c/blob/5e5b8fc6b3a543ee4b085a57e493a36509f52f18/examples/src/execho.c#L27)
+[execho](https://github.com/1Hyena/nt4c/blob/5e5b8fc6b3a543ee4b085a57e493a36509f52f18/examples/src/execho.c#L27),
 [expretty](https://github.com/1Hyena/nt4c/blob/5e5b8fc6b3a543ee4b085a57e493a36509f52f18/examples/src/expretty.c#L73),
 [exquery](https://github.com/1Hyena/nt4c/blob/5e5b8fc6b3a543ee4b085a57e493a36509f52f18/examples/src/exquery.c#L40),
 [extree](https://github.com/1Hyena/nt4c/blob/5e5b8fc6b3a543ee4b085a57e493a36509f52f18/examples/src/extree.c#L90)
