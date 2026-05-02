@@ -13,11 +13,11 @@ static void print_tree(NT_NODE *node, size_t depth) {
     }
 
     constexpr NT_TYPE navy_nodes = (
-        NT_TAG_LST_ROL  | NT_SET_MLS |
-        NT_TAG_LST_DCT  | NT_SET_NIL |
-        NT_TAG_LST_LST  | NT_SET_DCT |
-        NT_TAG_LST_MLS  | NT_SET_LST |
-        NT_TAG_LST_NIL  | NT_SET_ROL |
+        NT_LST_ROL  | NT_SET_MLS |
+        NT_LST_DCT  | NT_SET_NIL |
+        NT_LST_LST  | NT_SET_DCT |
+        NT_LST_MLS  | NT_SET_LST |
+        NT_LST_NIL  | NT_SET_ROL |
         NT_TAG_MLS
     );
 
@@ -27,7 +27,7 @@ static void print_tree(NT_NODE *node, size_t depth) {
 
     constexpr NT_TYPE green_nodes = NT_STR_ROL | NT_STR_MLN;
     constexpr NT_TYPE gray_nodes  = NT_SPACE   | NT_NEWLINE;
-    constexpr NT_TYPE olive_nodes = NT_TAG_COM | NT_STR_COM;
+    constexpr NT_TYPE olive_nodes = NT_TAG_COM | NT_COMMENT;
 
     const char *prefix = (
         (node->type & navy_nodes    ) ? "\x1b[0;34m" :

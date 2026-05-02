@@ -64,27 +64,26 @@ typedef enum : uint32_t {
     NT_SET_NIL      = 1 << 13,  // node references a nil assignment
     NT_TAG_MLS      = 1 << 14,  // node references the tag of a multiline string
     NT_TAG_COM      = 1 << 15,  // node references the tag of a comment line
-    NT_TAG_LST_ROL  = 1 << 16,  // tag of the enlisted rest-of-line string
-    NT_TAG_LST_MLS  = 1 << 17,  // tag of the enlisted multiline string
-    NT_TAG_LST_LST  = 1 << 18,  // tag of the enlisted sublist
-    NT_TAG_LST_DCT  = 1 << 19,  // tag of the enlisted dictionary
-    NT_TAG_LST_NIL  = 1 << 20,  // tag of the enlisted nil value
+    NT_LST_ROL      = 1 << 16,  // tag of the enlisted rest-of-line string
+    NT_LST_MLS      = 1 << 17,  // tag of the enlisted multiline string
+    NT_LST_LST      = 1 << 18,  // tag of the enlisted sublist
+    NT_LST_DCT      = 1 << 19,  // tag of the enlisted dictionary
+    NT_LST_NIL      = 1 << 20,  // tag of the enlisted nil value
     NT_STR_ROL      = 1 << 21,  // node references a rest-of-line string
     NT_STR_MLN      = 1 << 22,  // node references a multiline string
-    NT_STR_COM      = 1 << 23,  // node references a comment string
+    NT_COMMENT      = 1 << 23,  // node references a comment
     NT_NEWLINE      = 1 << 24,  // node references the new line data
     NT_INDENT       = 1 << 25,  // node references the indentation space
     NT_INTERSPACE   = 1 << 26,  // node references an interspace
     NT_INVALID      = 1 << 27,  // node references a segment of invalid input
     NT_DEEP         = 1 << 28,  // node that exceeds the maximum nesting depth
     ////////////////////////////////////////////////////////////////////////////
-    NT_TOP      =   NT_TOP_NIL|NT_TOP_LST|NT_TOP_MLS|NT_TOP_DCT,
-    NT_TAG_LST  =   NT_TAG_LST_ROL|NT_TAG_LST_MLS|NT_TAG_LST_LST|NT_TAG_LST_DCT|
-                    NT_TAG_LST_NIL,
-    NT_KEY      =   NT_KEY_ROL|NT_KEY_MLS|NT_KEY_LST|NT_KEY_DCT|NT_KEY_NIL,
-    NT_SET      =   NT_SET_MLS|NT_SET_DCT|NT_SET_LST|NT_SET_ROL|NT_SET_NIL,
-    NT_STR      =   NT_STR_MLN|NT_STR_ROL,
-    NT_SPACE    =   NT_INDENT|NT_INTERSPACE
+    NT_TOP          = NT_TOP_NIL|NT_TOP_LST|NT_TOP_MLS|NT_TOP_DCT,
+    NT_LST          = NT_LST_ROL|NT_LST_MLS|NT_LST_LST|NT_LST_DCT|NT_LST_NIL,
+    NT_KEY          = NT_KEY_ROL|NT_KEY_MLS|NT_KEY_LST|NT_KEY_DCT|NT_KEY_NIL,
+    NT_SET          = NT_SET_MLS|NT_SET_DCT|NT_SET_LST|NT_SET_ROL|NT_SET_NIL,
+    NT_STR          = NT_STR_MLN|NT_STR_ROL,
+    NT_SPACE        = NT_INDENT|NT_INTERSPACE
 } NT_TYPE;
 
 typedef int (*NT_CALLBACK) (
@@ -325,42 +324,42 @@ static inline void nt_parser_set_callback(NT_PARSER *parser, NT_CALLBACK fun) {
 
 static inline const char *nt_type_code(NT_TYPE type) {
     switch (type) {
-        case NT_NONE:           return "NONE";
-        case NT_TOP_NIL:        return "TOP_NIL";
-        case NT_TOP_LST:        return "TOP_LST";
-        case NT_TOP_MLS:        return "TOP_MLS";
-        case NT_TOP_DCT:        return "TOP_DCT";
-        case NT_INVALID:        return "INVALID";
-        case NT_DEEP:           return "DEEP";
-        case NT_TAG_COM:        return "TAG_COM";
-        case NT_STR_COM:        return "STR_COM";
-        case NT_TAG_LST_ROL:    return "TAG_LST_ROL";
-        case NT_TAG_LST_MLS:    return "TAG_LST_MLS";
-        case NT_TAG_LST_LST:    return "TAG_LST_LST";
-        case NT_TAG_LST_DCT:    return "TAG_LST_DCT";
-        case NT_TAG_LST_NIL:    return "TAG_LST_NIL";
-        case NT_KEY_ROL:        return "KEY_ROL";
-        case NT_KEY_MLS:        return "KEY_MLS";
-        case NT_KEY_LST:        return "KEY_LST";
-        case NT_KEY_DCT:        return "KEY_DCT";
-        case NT_KEY_NIL:        return "KEY_NIL";
-        case NT_STR_ROL:        return "STR_ROL";
-        case NT_STR_MLN:        return "STR_MLN";
-        case NT_NEWLINE:        return "NEWLINE";
-        case NT_INDENT:         return "INDENT";
-        case NT_INTERSPACE:     return "INTERSPACE";
-        case NT_SET_MLS:        return "SET_MLS";
-        case NT_SET_DCT:        return "SET_DCT";
-        case NT_SET_LST:        return "SET_LST";
-        case NT_SET_ROL:        return "SET_ROL";
-        case NT_SET_NIL:        return "SET_NIL";
-        case NT_TAG_MLS:        return "TAG_MLS";
-        case NT_TOP:            return "TOP";
-        case NT_TAG_LST:        return "TAG_LST";
-        case NT_KEY:            return "KEY";
-        case NT_SET:            return "SET";
-        case NT_STR:            return "STR";
-        case NT_SPACE:          return "SPACE";
+        case NT_NONE:       return "NONE";
+        case NT_TOP_NIL:    return "TOP_NIL";
+        case NT_TOP_LST:    return "TOP_LST";
+        case NT_TOP_MLS:    return "TOP_MLS";
+        case NT_TOP_DCT:    return "TOP_DCT";
+        case NT_INVALID:    return "INVALID";
+        case NT_DEEP:       return "DEEP";
+        case NT_TAG_COM:    return "TAG_COM";
+        case NT_COMMENT:    return "COMMENT";
+        case NT_LST_ROL:    return "LST_ROL";
+        case NT_LST_MLS:    return "LST_MLS";
+        case NT_LST_LST:    return "LST_LST";
+        case NT_LST_DCT:    return "LST_DCT";
+        case NT_LST_NIL:    return "LST_NIL";
+        case NT_KEY_ROL:    return "KEY_ROL";
+        case NT_KEY_MLS:    return "KEY_MLS";
+        case NT_KEY_LST:    return "KEY_LST";
+        case NT_KEY_DCT:    return "KEY_DCT";
+        case NT_KEY_NIL:    return "KEY_NIL";
+        case NT_STR_ROL:    return "STR_ROL";
+        case NT_STR_MLN:    return "STR_MLN";
+        case NT_NEWLINE:    return "NEWLINE";
+        case NT_INDENT:     return "INDENT";
+        case NT_INTERSPACE: return "INTERSPACE";
+        case NT_SET_MLS:    return "SET_MLS";
+        case NT_SET_DCT:    return "SET_DCT";
+        case NT_SET_LST:    return "SET_LST";
+        case NT_SET_ROL:    return "SET_ROL";
+        case NT_SET_NIL:    return "SET_NIL";
+        case NT_TAG_MLS:    return "TAG_MLS";
+        case NT_TOP:        return "TOP";
+        case NT_LST:        return "LST";
+        case NT_KEY:        return "KEY";
+        case NT_SET:        return "SET";
+        case NT_STR:        return "STR";
+        case NT_SPACE:      return "SPACE";
     }
 
     return "???";
@@ -368,42 +367,42 @@ static inline const char *nt_type_code(NT_TYPE type) {
 
 static inline NT_TYPE nt_type_type(NT_TYPE type) {
     switch (type) {
-        case NT_NONE:           break;
+        case NT_NONE:       break;
         case NT_TOP_NIL:
         case NT_TOP_LST:
         case NT_TOP_MLS:
-        case NT_TOP_DCT:        return NT_TOP;
-        case NT_TAG_LST_ROL:
-        case NT_TAG_LST_MLS:
-        case NT_TAG_LST_LST:
-        case NT_TAG_LST_DCT:
-        case NT_TAG_LST_NIL:    return NT_TAG_LST;
+        case NT_TOP_DCT:    return NT_TOP;
+        case NT_LST_ROL:
+        case NT_LST_MLS:
+        case NT_LST_LST:
+        case NT_LST_DCT:
+        case NT_LST_NIL:    return NT_LST;
         case NT_KEY_ROL:
         case NT_KEY_MLS:
         case NT_KEY_LST:
         case NT_KEY_DCT:
-        case NT_KEY_NIL:        return NT_KEY;
+        case NT_KEY_NIL:    return NT_KEY;
         case NT_SET_MLS:
         case NT_SET_DCT:
         case NT_SET_LST:
         case NT_SET_ROL:
-        case NT_SET_NIL:        return NT_SET;
+        case NT_SET_NIL:    return NT_SET;
         case NT_INDENT:
-        case NT_INTERSPACE:     return NT_SPACE;
+        case NT_INTERSPACE: return NT_SPACE;
         case NT_STR_ROL:
-        case NT_STR_MLN:        return NT_STR;
+        case NT_STR_MLN:    return NT_STR;
         case NT_INVALID:
         case NT_DEEP:
         case NT_TAG_COM:
-        case NT_STR_COM:
+        case NT_COMMENT:
         case NT_NEWLINE:
         case NT_SPACE:
         case NT_TAG_MLS:
         case NT_TOP:
-        case NT_TAG_LST:
+        case NT_LST:
         case NT_STR:
         case NT_KEY:
-        case NT_SET:            return type;
+        case NT_SET:        return type;
     }
 
     return NT_NONE;
@@ -538,7 +537,7 @@ static const char *nt4c_parser_deserialize(
     constexpr struct any_collection_type any_collection = {
         .keys       = NT_KEY,
         .setters    = NT_SET,
-        .list_tags  = NT_TAG_LST
+        .list_tags  = NT_LST
     };
 
     size_t line_size;
@@ -618,7 +617,7 @@ static const char *nt4c_parser_deserialize(
         }
 
         const NT_UNIT val_unit = {
-            .type = NT_STR_COM,
+            .type = NT_COMMENT,
             .data = after_spaces + 1,
             .size = line_size - (spaces + 1)
         };
@@ -645,8 +644,8 @@ static const char *nt4c_parser_deserialize(
             if (parent->type & NT_KEY_MLS) {
                 nt4c_node_set_type(parent, NT_KEY_MLS);
             }
-            else if (parent->type & NT_TAG_LST_MLS) {
-                nt4c_node_set_type(parent, NT_TAG_LST_MLS);
+            else if (parent->type & NT_LST_MLS) {
+                nt4c_node_set_type(parent, NT_LST_MLS);
             }
             else if (parent->type & NT_TOP_MLS) {
                 nt4c_node_set_type(parent, NT_TOP_MLS);
@@ -722,8 +721,8 @@ static const char *nt4c_parser_deserialize(
             if (parent->type & NT_KEY_LST) {
                 nt4c_node_set_type(parent, NT_KEY_LST);
             }
-            else if (parent->type & NT_TAG_LST_LST) {
-                nt4c_node_set_type(parent, NT_TAG_LST_LST);
+            else if (parent->type & NT_LST_LST) {
+                nt4c_node_set_type(parent, NT_LST_LST);
             }
             else if (parent->type & NT_TOP_LST) {
                 nt4c_node_set_type(parent, NT_TOP_LST);
@@ -757,7 +756,7 @@ static const char *nt4c_parser_deserialize(
         NT_NODE *tag_node = nullptr;
 
         if (tag_sz == 2) {
-            nest_type = NT_TAG_LST_ROL;
+            nest_type = NT_LST_ROL;
         }
         else {
             nest_type = any_collection.list_tags;
@@ -817,8 +816,8 @@ static const char *nt4c_parser_deserialize(
             if (parent->type & NT_KEY_DCT) {
                 nt4c_node_set_type(parent, NT_KEY_DCT);
             }
-            else if (parent->type & NT_TAG_LST_DCT) {
-                nt4c_node_set_type(parent, NT_TAG_LST_DCT);
+            else if (parent->type & NT_LST_DCT) {
+                nt4c_node_set_type(parent, NT_LST_DCT);
             }
             else if (parent->type & NT_TOP_DCT) {
                 nt4c_node_set_type(parent, NT_TOP_DCT);
@@ -993,9 +992,9 @@ static const char *nt4c_parser_deserialize(
 
     nt4c_node_reverse(nest);
 
-    if (nest->type & (NT_KEY_NIL|NT_TAG_LST_NIL)) {
+    if (nest->type & (NT_KEY_NIL|NT_LST_NIL)) {
         // If the nest type remains ambiguous, default to nil.
-        nt4c_node_set_type(nest, nest->type & (NT_KEY_NIL|NT_TAG_LST_NIL));
+        nt4c_node_set_type(nest, nest->type & (NT_KEY_NIL|NT_LST_NIL));
     }
 
     for (NT_NODE *child = nest->children; child; child = child->next) {

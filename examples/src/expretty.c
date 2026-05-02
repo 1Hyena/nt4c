@@ -7,15 +7,15 @@
 static int pretty_print(NT_NODE *node, size_t depth) {
     constexpr NT_TYPE body_nodes = (
         NT_STR_MLN | NT_SET_MLS | NT_SET_DCT | NT_SET_LST | NT_SET_ROL |
-        NT_SET_NIL | NT_STR_ROL | NT_STR_COM
+        NT_SET_NIL | NT_STR_ROL | NT_COMMENT
     );
 
     constexpr NT_TYPE navy_nodes = (
-        NT_TAG_LST_ROL  | NT_SET_MLS |
-        NT_TAG_LST_DCT  | NT_SET_NIL |
-        NT_TAG_LST_LST  | NT_SET_DCT |
-        NT_TAG_LST_MLS  | NT_SET_LST |
-        NT_TAG_LST_NIL  | NT_SET_ROL |
+        NT_LST_ROL  | NT_SET_MLS |
+        NT_LST_DCT  | NT_SET_NIL |
+        NT_LST_LST  | NT_SET_DCT |
+        NT_LST_MLS  | NT_SET_LST |
+        NT_LST_NIL  | NT_SET_ROL |
         NT_TAG_MLS
     );
 
@@ -23,11 +23,11 @@ static int pretty_print(NT_NODE *node, size_t depth) {
         NT_KEY_NIL | NT_KEY_MLS | NT_KEY_LST | NT_KEY_DCT | NT_KEY_ROL
     );
 
-    constexpr NT_TYPE olive_nodes = NT_TAG_COM | NT_STR_COM;
+    constexpr NT_TYPE olive_nodes = NT_TAG_COM | NT_COMMENT;
 
     constexpr NT_TYPE no_newline = (
-        NT_TAG_COM | NT_TAG_MLS | NT_TAG_LST_ROL | NT_KEY_NIL | NT_KEY_MLS |
-        NT_KEY_LST | NT_KEY_DCT | NT_KEY_ROL     | NT_SET_ROL
+        NT_TAG_COM | NT_TAG_MLS | NT_LST_ROL | NT_KEY_NIL | NT_KEY_MLS |
+        NT_KEY_LST | NT_KEY_DCT | NT_KEY_ROL | NT_SET_ROL
     );
 
     if (node->data) {

@@ -68,8 +68,8 @@ static int callback(
     }
 
     if (query->result.type == NT_NONE) {
-        if ((group_type & (NT_STR|NT_KEY|NT_TAG_LST)) == false) {
-            if (group_type == NT_STR_COM) {
+        if ((group_type & (NT_STR|NT_KEY|NT_LST)) == false) {
+            if (node_type == NT_COMMENT) {
                 for (size_t i = query->result.depth + 1; i < depth; ++i) {
                     printf("%s", "    ");
                 }
