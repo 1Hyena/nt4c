@@ -183,7 +183,7 @@ https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/exa
   - [nt_type_code](#nt_type_code) (*type*) → `const char *`
   - [nt_type_type](#nt_type_code) (*type*) → `NT_TYPE`
 
-https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L48-L88
+https://github.com/1Hyena/nt4c/blob/6908ef491ae1793ac9412c36d23abe302892756e/nt4c.h#L48-L87
 
 Specify the size of the integrated memory buffer of the `NT_PARSER` structure by
 defining the `NT_PARSER_NCOUNT` macro before including the `nt4c.h` header. The
